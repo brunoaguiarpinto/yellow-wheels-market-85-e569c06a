@@ -60,6 +60,10 @@ const SalesForm = ({ onSubmit, onCancel }: SalesFormProps) => {
     form.reset();
   };
 
+  // Filter out items with empty or invalid IDs
+  const validVehicles = vehicles.filter((vehicle: any) => vehicle && vehicle.id && vehicle.id.toString().trim() !== '');
+  const validClients = clients.filter((client: any) => client && client.id && client.id.toString().trim() !== '');
+
   return (
     <Card>
       <CardHeader>
@@ -75,11 +79,17 @@ const SalesForm = ({ onSubmit, onCancel }: SalesFormProps) => {
                   <SelectValue placeholder="Selecione o veículo..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {vehicles.map((vehicle: any) => (
-                    <SelectItem key={vehicle.id} value={vehicle.id}>
-                      {vehicle.brand} {vehicle.model} - {vehicle.year}
+                  {validVehicles.length > 0 ? (
+                    validVehicles.map((vehicle: any) => (
+                      <SelectItem key={vehicle.id} value={vehicle.id.toString()}>
+                        {vehicle.brand} {vehicle.model} - {vehicle.year}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-vehicles" disabled>
+                      Nenhum veículo disponível
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
               {form.formState.errors.vehicleId && (
@@ -94,11 +104,17 @@ const SalesForm = ({ onSubmit, onCancel }: SalesFormProps) => {
                   <SelectValue placeholder="Selecione o cliente..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {clients.map((client: any) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.name}
+                  {validClients.length > 0 ? (
+                    validClients.map((client: any) => (
+                      <SelectItem key={client.id} value={client.id.toString()}>
+                        {client.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-clients" disabled>
+                      Nenhum cliente disponível
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
               {form.formState.errors.clientId && (

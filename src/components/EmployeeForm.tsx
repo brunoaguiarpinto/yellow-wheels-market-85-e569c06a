@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -68,13 +67,13 @@ const EmployeeForm = ({ onSubmit, onCancel }: EmployeeFormProps) => {
   };
 
   const permissions = [
-    { id: 'vehicles_create', label: 'Criar Veículos' },
-    { id: 'vehicles_edit', label: 'Editar Veículos' },
-    { id: 'vehicles_delete', label: 'Excluir Veículos' },
-    { id: 'customers_create', label: 'Criar Clientes' },
-    { id: 'customers_edit', label: 'Editar Clientes' },
-    { id: 'financial_view', label: 'Ver Financeiro' },
-    { id: 'reports_view', label: 'Ver Relatórios' },
+    { id: 'vehicles.create', label: 'Criar Veículos' },
+    { id: 'vehicles.edit', label: 'Editar Veículos' },
+    { id: 'vehicles.delete', label: 'Excluir Veículos' },
+    { id: 'clients.create', label: 'Criar Clientes' },
+    { id: 'clients.edit', label: 'Editar Clientes' },
+    { id: 'sales.view', label: 'Ver Vendas' },
+    { id: 'sales.create', label: 'Criar Vendas' },
   ];
 
   return (
