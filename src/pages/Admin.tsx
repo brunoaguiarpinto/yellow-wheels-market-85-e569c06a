@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,9 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash, User } from "lucide-react";
+import { Plus, Edit, Trash, User, Eye, EyeOff } from "lucide-react";
 import VehicleForm from "@/components/VehicleForm";
 import CustomerForm from "@/components/CustomerForm";
+import EmployeeForm from "@/components/EmployeeForm";
 
 const Admin = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -18,7 +19,18 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState("vehicles");
   const [vehicleDialogOpen, setVehicleDialogOpen] = useState(false);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
+  const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [showPasswords, setShowPasswords] = useState<{[key: string]: boolean}>({});
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Carregar funcionários do localStorage
+    const savedEmployees = localStorage.getItem('employees');
+    if (savedEmployees) {
+      setEmployees(JSON.parse(savedEmployees));
+    }
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +62,38 @@ const Admin = () => {
   const handleCustomerSubmit = (data: any) => {
     console.log("Dados do cliente:", data);
     setCustomerDialogOpen(false);
+  };
+
+  const handleEmployeeSubmit = (data: any) => {
+    console.log("Dados do funcionário:", data);
+    
+    // Salvar funcionário no localStorage
+    const updatedEmployees = [...employees, data];
+    setEmployees(updatedEmployees);
+    localStorage.setItem('employees', JSON.stringify(updatedEmployees));
+    
+    setEmployeeDialogOpen(false);
+    toast({
+      title: "Funcionário cadastrado com sucesso!",
+      description: `Login: ${data.email} | Senha: ${data.password}`,
+    });
+  };
+
+  const togglePasswordVisibility = (employeeId: string) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [employeeId]: !prev[employeeId]
+    }));
+  };
+
+  const deleteEmployee = (employeeId: string) => {
+    const updatedEmployees = employees.filter(emp => emp.id !== employeeId);
+    setEmployees(updatedEmployees);
+    localStorage.setItem('employees', JSON.stringify(updatedEmployees));
+    toast({
+      title: "Funcionário removido",
+      description: "O funcionário foi removido do sistema.",
+    });
   };
 
   if (!isLoggedIn) {
@@ -138,9 +182,9 @@ const Admin = () => {
         <Tabs value={activeTab} onValueChange={handleTabChange} className="animate-fade-in">
           <TabsList className="grid w-full grid-cols-4 mb-8">
             <TabsTrigger value="vehicles" className="font-opensans">Veículos</TabsTrigger>
-            <TabsTrigger value="financial" className="font-opensans">Financeiro</TabsTrigger>
             <TabsTrigger value="employees" className="font-opensans">Funcionários</TabsTrigger>
             <TabsTrigger value="customers" className="font-opensans">Clientes</TabsTrigger>
+            <TabsTrigger value="financial" className="font-opensans">Financeiro</TabsTrigger>
           </TabsList>
 
           {/* Vehicles Tab */}
@@ -207,51 +251,27 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
-          {/* Financial Tab */}
-          <TabsContent value="financial" className="space-y-6 animate-slide-up">
-            <h2 className="text-3xl font-montserrat font-bold">Controle Financeiro</h2>
-            
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-opensans text-green-600">Vendas do Mês</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-montserrat font-bold text-green-600">R$ 450.000</p>
-                  <p className="font-opensans text-gray-600">+15% vs mês anterior</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-opensans text-blue-600">Comissões</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-montserrat font-bold text-blue-600">R$ 22.500</p>
-                  <p className="font-opensans text-gray-600">5% das vendas</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-opensans text-purple-600">Estoque</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-montserrat font-bold text-purple-600">45 veículos</p>
-                  <p className="font-opensans text-gray-600">R$ 2.1M em estoque</p>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
           {/* Employees Tab */}
           <TabsContent value="employees" className="space-y-6 animate-slide-up">
             <div className="flex justify-between items-center">
               <h2 className="text-3xl font-montserrat font-bold">Gerenciamento de Funcionários</h2>
-              <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Funcionário
-              </Button>
+              <Dialog open={employeeDialogOpen} onOpenChange={setEmployeeDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Funcionário
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="font-montserrat">Cadastrar Novo Funcionário</DialogTitle>
+                  </DialogHeader>
+                  <EmployeeForm 
+                    onSubmit={handleEmployeeSubmit}
+                    onCancel={() => setEmployeeDialogOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
             </div>
 
             <Card>
@@ -260,29 +280,59 @@ const Admin = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="font-opensans">Nome</TableHead>
-                      <TableHead className="font-opensans">Cargo</TableHead>
                       <TableHead className="font-opensans">Email</TableHead>
-                      <TableHead className="font-opensans">Vendas</TableHead>
+                      <TableHead className="font-opensans">Cargo</TableHead>
+                      <TableHead className="font-opensans">Departamento</TableHead>
+                      <TableHead className="font-opensans">Senha</TableHead>
                       <TableHead className="font-opensans">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <TableRow>
-                      <TableCell className="font-opensans">João Silva</TableCell>
-                      <TableCell className="font-opensans">Vendedor</TableCell>
-                      <TableCell className="font-opensans">joao@lordveiculos.com</TableCell>
-                      <TableCell className="font-opensans">12 veículos</TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="destructive">
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                    {employees.map((employee) => (
+                      <TableRow key={employee.id}>
+                        <TableCell className="font-opensans">{employee.name}</TableCell>
+                        <TableCell className="font-opensans">{employee.email}</TableCell>
+                        <TableCell className="font-opensans">{employee.position}</TableCell>
+                        <TableCell className="font-opensans">{employee.department}</TableCell>
+                        <TableCell className="font-opensans">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-mono text-sm">
+                              {showPasswords[employee.id] ? employee.password : '••••••'}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => togglePasswordVisibility(employee.id)}
+                            >
+                              {showPasswords[employee.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button size="sm" variant="outline">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => deleteEmployee(employee.id)}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {employees.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          <p className="font-opensans text-gray-500">
+                            Nenhum funcionário cadastrado ainda.
+                          </p>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -345,6 +395,43 @@ const Admin = () => {
                 </Table>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Financial Tab */}
+          <TabsContent value="financial" className="space-y-6 animate-slide-up">
+            <h2 className="text-3xl font-montserrat font-bold">Controle Financeiro</h2>
+            
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-opensans text-green-600">Vendas do Mês</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-montserrat font-bold text-green-600">R$ 450.000</p>
+                  <p className="font-opensans text-gray-600">+15% vs mês anterior</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-opensans text-blue-600">Comissões</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-montserrat font-bold text-blue-600">R$ 22.500</p>
+                  <p className="font-opensans text-gray-600">5% das vendas</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-opensans text-purple-600">Estoque</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-montserrat font-bold text-purple-600">45 veículos</p>
+                  <p className="font-opensans text-gray-600">R$ 2.1M em estoque</p>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
