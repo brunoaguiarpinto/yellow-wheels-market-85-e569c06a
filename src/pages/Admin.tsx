@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -12,6 +11,8 @@ import VehicleForm from "@/components/VehicleForm";
 import CustomerForm from "@/components/CustomerForm";
 import EmployeeForm from "@/components/EmployeeForm";
 import EmployeeEditForm from "@/components/EmployeeEditForm";
+import AdminSidebar from "@/components/AdminSidebar";
+import Financial from "./Financial";
 
 const Admin = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -120,99 +121,11 @@ const Admin = () => {
     });
   };
 
-  if (!isLoggedIn) {
-    return (
-      <div className="min-h-screen bg-gradient-primary flex items-center justify-center px-4">
-        <Card className="w-full max-w-md animate-fade-in">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-montserrat font-bold">
-              Painel Administrativo
-            </CardTitle>
-            <p className="font-opensans text-gray-600">
-              Lord Veículos - Faça login para acessar o sistema
-            </p>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <Label htmlFor="username" className="font-opensans">Usuário</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Digite: admin"
-                  className="font-opensans"
-                />
-              </div>
-              <div>
-                <Label htmlFor="password" className="font-opensans">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Digite: admin"
-                  className="font-opensans"
-                />
-              </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-accent text-black hover:bg-accent/90 font-opensans font-semibold"
-              >
-                Entrar
-              </Button>
-              <Button 
-                type="button" 
-                variant="link" 
-                className="w-full text-accent font-opensans"
-              >
-                Esqueci a Senha
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-montserrat font-bold">
-              Painel Administrativo - Lord Veículos
-            </h1>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <User className="h-5 w-5 text-gray-600" />
-                <span className="font-opensans text-gray-600">Admin</span>
-              </div>
-              <Button 
-                variant="outline" 
-                onClick={() => setIsLoggedIn(false)}
-                className="font-opensans"
-              >
-                Sair
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="animate-fade-in">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            <TabsTrigger value="vehicles" className="font-opensans">Veículos</TabsTrigger>
-            <TabsTrigger value="employees" className="font-opensans">Funcionários</TabsTrigger>
-            <TabsTrigger value="customers" className="font-opensans">Clientes</TabsTrigger>
-            <TabsTrigger value="financial" className="font-opensans">Financeiro</TabsTrigger>
-          </TabsList>
-
-          {/* Vehicles Tab */}
-          <TabsContent value="vehicles" className="space-y-6 animate-slide-up">
+  const renderContent = () => {
+    switch (activeTab) {
+      case "vehicles":
+        return (
+          <div className="space-y-6 animate-slide-up">
             <div className="flex justify-between items-center">
               <h2 className="text-3xl font-montserrat font-bold">Gerenciamento de Veículos</h2>
               <Dialog open={vehicleDialogOpen} onOpenChange={setVehicleDialogOpen}>
@@ -273,10 +186,12 @@ const Admin = () => {
                 </Table>
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>
+        );
 
-          {/* Employees Tab */}
-          <TabsContent value="employees" className="space-y-6 animate-slide-up">
+      case "employees":
+        return (
+          <div className="space-y-6 animate-slide-up">
             <div className="flex justify-between items-center">
               <h2 className="text-3xl font-montserrat font-bold">Gerenciamento de Funcionários</h2>
               <div className="flex space-x-4">
@@ -403,10 +318,12 @@ const Admin = () => {
                 )}
               </DialogContent>
             </Dialog>
-          </TabsContent>
+          </div>
+        );
 
-          {/* Customers Tab */}
-          <TabsContent value="customers" className="space-y-6 animate-slide-up">
+      case "customers":
+        return (
+          <div className="space-y-6 animate-slide-up">
             <div className="flex justify-between items-center">
               <h2 className="text-3xl font-montserrat font-bold">Gerenciamento de Clientes</h2>
               <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
@@ -461,47 +378,95 @@ const Admin = () => {
                 </Table>
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>
+        );
 
-          {/* Financial Tab */}
-          <TabsContent value="financial" className="space-y-6 animate-slide-up">
-            <h2 className="text-3xl font-montserrat font-bold">Controle Financeiro</h2>
-            
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-opensans text-green-600">Vendas do Mês</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-montserrat font-bold text-green-600">R$ 450.000</p>
-                  <p className="font-opensans text-gray-600">+15% vs mês anterior</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-opensans text-blue-600">Comissões</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-montserrat font-bold text-blue-600">R$ 22.500</p>
-                  <p className="font-opensans text-gray-600">5% das vendas</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-opensans text-purple-600">Estoque</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-montserrat font-bold text-purple-600">45 veículos</p>
-                  <p className="font-opensans text-gray-600">R$ 2.1M em estoque</p>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+      case "financial":
+        return <Financial />;
+
+      default:
+        return null;
+    }
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-gradient-primary flex items-center justify-center px-4">
+        <Card className="w-full max-w-md animate-fade-in">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-montserrat font-bold">
+              Painel Administrativo
+            </CardTitle>
+            <p className="font-opensans text-gray-600">
+              Lord Veículos - Faça login para acessar o sistema
+            </p>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <Label htmlFor="username" className="font-opensans">Usuário</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Digite: admin"
+                  className="font-opensans"
+                />
+              </div>
+              <div>
+                <Label htmlFor="password" className="font-opensans">Senha</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Digite: admin"
+                  className="font-opensans"
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full bg-accent text-black hover:bg-accent/90 font-opensans font-semibold"
+              >
+                Entrar
+              </Button>
+              <Button 
+                type="button" 
+                variant="link" 
+                className="w-full text-accent font-opensans"
+              >
+                Esqueci a Senha
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab}>
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <User className="h-5 w-5 text-gray-600" />
+              <span className="font-opensans text-gray-600">Admin</span>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsLoggedIn(false)}
+              className="font-opensans"
+            >
+              Sair
+            </Button>
+          </div>
+        </div>
+
+        {renderContent()}
+      </div>
+    </AdminSidebar>
   );
 };
 
