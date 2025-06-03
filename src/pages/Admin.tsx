@@ -6,21 +6,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash, User } from "lucide-react";
+import VehicleForm from "@/components/VehicleForm";
+import CustomerForm from "@/components/CustomerForm";
 
 const Admin = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [activeTab, setActiveTab] = useState("vehicles");
+  const [vehicleDialogOpen, setVehicleDialogOpen] = useState(false);
+  const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Senha padrão admin/admin
     if (username === "admin" && password === "admin") {
       setIsLoggedIn(true);
       toast({
@@ -38,6 +40,16 @@ const Admin = () => {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
+  };
+
+  const handleVehicleSubmit = (data: any) => {
+    console.log("Dados do veículo:", data);
+    setVehicleDialogOpen(false);
+  };
+
+  const handleCustomerSubmit = (data: any) => {
+    console.log("Dados do cliente:", data);
+    setCustomerDialogOpen(false);
   };
 
   if (!isLoggedIn) {
@@ -135,18 +147,21 @@ const Admin = () => {
           <TabsContent value="vehicles" className="space-y-6 animate-slide-up">
             <div className="flex justify-between items-center">
               <h2 className="text-3xl font-montserrat font-bold">Gerenciamento de Veículos</h2>
-              <Dialog>
+              <Dialog open={vehicleDialogOpen} onOpenChange={setVehicleDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
                     <Plus className="h-4 w-4 mr-2" />
                     Adicionar Veículo
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle className="font-montserrat">Adicionar Novo Veículo</DialogTitle>
                   </DialogHeader>
-                  <VehicleForm />
+                  <VehicleForm 
+                    onSubmit={handleVehicleSubmit}
+                    onCancel={() => setVehicleDialogOpen(false)}
+                  />
                 </DialogContent>
               </Dialog>
             </div>
@@ -278,10 +293,23 @@ const Admin = () => {
           <TabsContent value="customers" className="space-y-6 animate-slide-up">
             <div className="flex justify-between items-center">
               <h2 className="text-3xl font-montserrat font-bold">Gerenciamento de Clientes</h2>
-              <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Cliente
-              </Button>
+              <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Cliente
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="font-montserrat">Adicionar Novo Cliente</DialogTitle>
+                  </DialogHeader>
+                  <CustomerForm 
+                    onSubmit={handleCustomerSubmit}
+                    onCancel={() => setCustomerDialogOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
             </div>
 
             <Card>
@@ -321,60 +349,6 @@ const Admin = () => {
         </Tabs>
       </div>
     </div>
-  );
-};
-
-// Vehicle Form Component
-const VehicleForm = () => {
-  return (
-    <form className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="brand" className="font-opensans">Marca</Label>
-          <Input id="brand" placeholder="Ex: Toyota" className="font-opensans" />
-        </div>
-        <div>
-          <Label htmlFor="model" className="font-opensans">Modelo</Label>
-          <Input id="model" placeholder="Ex: Corolla" className="font-opensans" />
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="year" className="font-opensans">Ano</Label>
-          <Input id="year" type="number" placeholder="2023" className="font-opensans" />
-        </div>
-        <div>
-          <Label htmlFor="price" className="font-opensans">Preço</Label>
-          <Input id="price" type="number" placeholder="89000" className="font-opensans" />
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="mileage" className="font-opensans">Quilometragem</Label>
-          <Input id="mileage" type="number" placeholder="15000" className="font-opensans" />
-        </div>
-        <div>
-          <Label htmlFor="fuel" className="font-opensans">Combustível</Label>
-          <Select>
-            <SelectTrigger className="font-opensans">
-              <SelectValue placeholder="Selecione..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="flex">Flex</SelectItem>
-              <SelectItem value="gasoline">Gasolina</SelectItem>
-              <SelectItem value="diesel">Diesel</SelectItem>
-              <SelectItem value="electric">Elétrico</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      
-      <Button type="submit" className="w-full bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
-        Salvar Veículo
-      </Button>
-    </form>
   );
 };
 
