@@ -13,9 +13,10 @@ import EmployeeForm from "@/components/EmployeeForm";
 import EmployeeEditForm from "@/components/EmployeeEditForm";
 import AdminSidebar from "@/components/AdminSidebar";
 import Financial from "./Financial";
+import { useAuth } from "@/hooks/use-auth";
 
 const Admin = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isAuthenticated, isAdmin, user, logout, login, isLoading } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [activeTab, setActiveTab] = useState("vehicles");
@@ -36,11 +37,12 @@ const Admin = () => {
     }
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (username === "admin" && password === "admin") {
-      setIsLoggedIn(true);
+    const success = await login(username, password, 'admin');
+    
+    if (success) {
       toast({
         title: "Login realizado com sucesso!",
         description: "Bem-vindo ao painel administrativo da Lord Veículos.",
@@ -389,7 +391,20 @@ const Admin = () => {
     }
   };
 
-  if (!isLoggedIn) {
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-primary flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
+          <p className="font-opensans text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Se não estiver autenticado ou não for admin, mostrar tela de login
+  if (!isAuthenticated || !isAdmin) {
     return (
       <div className="min-h-screen bg-gradient-primary flex items-center justify-center px-4">
         <Card className="w-full max-w-md animate-fade-in">
@@ -428,8 +443,9 @@ const Admin = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-accent text-black hover:bg-accent/90 font-opensans font-semibold"
+                disabled={isLoading}
               >
-                Entrar
+                {isLoading ? "Entrando..." : "Entrar"}
               </Button>
               <Button 
                 type="button" 
@@ -452,11 +468,13 @@ const Admin = () => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <User className="h-5 w-5 text-gray-600" />
-              <span className="font-opensans text-gray-600">Admin</span>
+              <span className="font-opensans text-gray-600">
+                {user?.name || 'Admin'}
+              </span>
             </div>
             <Button 
               variant="outline" 
-              onClick={() => setIsLoggedIn(false)}
+              onClick={logout}
               className="font-opensans"
             >
               Sair

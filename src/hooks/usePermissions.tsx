@@ -30,12 +30,31 @@ export const usePermissions = () => {
 
   return {
     hasPermission,
+    // Veículos
     canCreateVehicles: hasPermission('vehicles.create'),
     canEditVehicles: hasPermission('vehicles.edit'),
     canDeleteVehicles: hasPermission('vehicles.delete'),
+    canViewVehicles: hasPermission('vehicles.view'),
+    // Clientes
     canCreateClients: hasPermission('clients.create'),
     canEditClients: hasPermission('clients.edit'),
+    canDeleteClients: hasPermission('clients.delete'),
+    canViewClients: hasPermission('clients.view'),
+    // Vendas
     canViewSales: hasPermission('sales.view'),
     canCreateSales: hasPermission('sales.create'),
+    canEditSales: hasPermission('sales.edit'),
+    canDeleteSales: hasPermission('sales.delete'),
+    // Financeiro
+    canViewFinancial: hasPermission('financial.view'),
+    canCreatePurchases: hasPermission('financial.purchases'),
+    canViewAnalysis: hasPermission('financial.analysis'),
+    canExportReports: hasPermission('financial.export'),
+    canManageInventory: hasPermission('financial.inventory'),
+    // Funcionários
+    canCreateEmployees: hasPermission('employees.create'),
+    canEditEmployees: hasPermission('employees.edit'),
+    canDeleteEmployees: hasPermission('employees.delete'),
+    canViewEmployees: hasPermission('employees.view'),
   };
 };
