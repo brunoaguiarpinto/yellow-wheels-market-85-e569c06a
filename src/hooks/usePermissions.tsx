@@ -4,10 +4,28 @@ import { useAuth } from "@/contexts/AuthContext";
 export const usePermissions = () => {
   const { user } = useAuth();
 
+  console.log("usePermissions - user:", user); // Debug log
+
   const hasPermission = (permission: string) => {
-    if (!user) return false;
-    if (user.role === 'admin') return true;
-    return user.permissions?.includes(permission) || false;
+    if (!user) {
+      console.log("usePermissions - no user found");
+      return false;
+    }
+    
+    if (user.role === 'admin') {
+      console.log("usePermissions - admin user, granting all permissions");
+      return true;
+    }
+    
+    const userPermissions = user.permissions || [];
+    const hasAccess = userPermissions.includes(permission);
+    
+    console.log(`usePermissions - checking permission "${permission}":`, {
+      userPermissions,
+      hasAccess
+    });
+    
+    return hasAccess;
   };
 
   return {

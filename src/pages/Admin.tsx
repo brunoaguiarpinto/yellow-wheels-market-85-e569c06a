@@ -11,6 +11,7 @@ import { Plus, Edit, Trash, User, Eye, EyeOff } from "lucide-react";
 import VehicleForm from "@/components/VehicleForm";
 import CustomerForm from "@/components/CustomerForm";
 import EmployeeForm from "@/components/EmployeeForm";
+import EmployeeEditForm from "@/components/EmployeeEditForm";
 
 const Admin = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -20,6 +21,8 @@ const Admin = () => {
   const [vehicleDialogOpen, setVehicleDialogOpen] = useState(false);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
+  const [employeeEditDialogOpen, setEmployeeEditDialogOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const [employees, setEmployees] = useState<any[]>([]);
   const [showPasswords, setShowPasswords] = useState<{[key: string]: boolean}>({});
   const { toast } = useToast();
@@ -76,6 +79,27 @@ const Admin = () => {
     toast({
       title: "Funcionário cadastrado com sucesso!",
       description: `Login: ${data.email} | Senha: ${data.password}`,
+    });
+  };
+
+  const handleEmployeeEdit = (employee: any) => {
+    setEditingEmployee(employee);
+    setEmployeeEditDialogOpen(true);
+  };
+
+  const handleEmployeeUpdate = (data: any) => {
+    const updatedEmployees = employees.map(emp => 
+      emp.id === data.id ? data : emp
+    );
+    setEmployees(updatedEmployees);
+    localStorage.setItem('employees', JSON.stringify(updatedEmployees));
+    
+    setEmployeeEditDialogOpen(false);
+    setEditingEmployee(null);
+    
+    toast({
+      title: "Funcionário atualizado!",
+      description: "Os dados do funcionário foram atualizados com sucesso.",
     });
   };
 
@@ -255,23 +279,25 @@ const Admin = () => {
           <TabsContent value="employees" className="space-y-6 animate-slide-up">
             <div className="flex justify-between items-center">
               <h2 className="text-3xl font-montserrat font-bold">Gerenciamento de Funcionários</h2>
-              <Dialog open={employeeDialogOpen} onOpenChange={setEmployeeDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Funcionário
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="font-montserrat">Cadastrar Novo Funcionário</DialogTitle>
-                  </DialogHeader>
-                  <EmployeeForm 
-                    onSubmit={handleEmployeeSubmit}
-                    onCancel={() => setEmployeeDialogOpen(false)}
-                  />
-                </DialogContent>
-              </Dialog>
+              <div className="flex space-x-4">
+                <Dialog open={employeeDialogOpen} onOpenChange={setEmployeeDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Funcionário
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="font-montserrat">Cadastrar Novo Funcionário</DialogTitle>
+                    </DialogHeader>
+                    <EmployeeForm 
+                      onSubmit={handleEmployeeSubmit}
+                      onCancel={() => setEmployeeDialogOpen(false)}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
 
             <Card>
@@ -283,6 +309,7 @@ const Admin = () => {
                       <TableHead className="font-opensans">Email</TableHead>
                       <TableHead className="font-opensans">Cargo</TableHead>
                       <TableHead className="font-opensans">Departamento</TableHead>
+                      <TableHead className="font-opensans">Permissões</TableHead>
                       <TableHead className="font-opensans">Senha</TableHead>
                       <TableHead className="font-opensans">Ações</TableHead>
                     </TableRow>
@@ -294,6 +321,22 @@ const Admin = () => {
                         <TableCell className="font-opensans">{employee.email}</TableCell>
                         <TableCell className="font-opensans">{employee.position}</TableCell>
                         <TableCell className="font-opensans">{employee.department}</TableCell>
+                        <TableCell className="font-opensans">
+                          <div className="flex flex-wrap gap-1">
+                            {employee.permissions?.length > 0 ? (
+                              employee.permissions.map((permission: string) => (
+                                <span 
+                                  key={permission} 
+                                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs"
+                                >
+                                  {permission.split('.')[1]}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-gray-500 text-sm">Nenhuma</span>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell className="font-opensans">
                           <div className="flex items-center space-x-2">
                             <span className="font-mono text-sm">
@@ -310,7 +353,11 @@ const Admin = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleEmployeeEdit(employee)}
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button 
@@ -326,7 +373,7 @@ const Admin = () => {
                     ))}
                     {employees.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={7} className="text-center py-8">
                           <p className="font-opensans text-gray-500">
                             Nenhum funcionário cadastrado ainda.
                           </p>
@@ -337,6 +384,25 @@ const Admin = () => {
                 </Table>
               </CardContent>
             </Card>
+
+            {/* Dialog de Edição de Funcionário */}
+            <Dialog open={employeeEditDialogOpen} onOpenChange={setEmployeeEditDialogOpen}>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="font-montserrat">Editar Funcionário</DialogTitle>
+                </DialogHeader>
+                {editingEmployee && (
+                  <EmployeeEditForm 
+                    employee={editingEmployee}
+                    onSubmit={handleEmployeeUpdate}
+                    onCancel={() => {
+                      setEmployeeEditDialogOpen(false);
+                      setEditingEmployee(null);
+                    }}
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* Customers Tab */}
