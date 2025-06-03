@@ -12,6 +12,7 @@ import Contact from "./pages/Contact";
 import Admin from "./pages/Admin";
 import EmployeeLogin from "./pages/EmployeeLogin";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
+import Financial from "./pages/Financial";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/employee" element={<EmployeeLogin />} />
             <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+            <Route path="/financial" element={<Financial />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
