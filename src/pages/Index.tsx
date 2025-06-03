@@ -2,8 +2,48 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import VehicleCard from "@/components/VehicleCard";
 
 const Index = () => {
+  // Dados dos veículos em destaque
+  const featuredVehicles = [
+    {
+      id: 1,
+      brand: "Toyota",
+      model: "Corolla",
+      year: 2022,
+      price: 89000,
+      image: "/placeholder.svg",
+      mileage: 15000,
+      fuel: "Flex"
+    },
+    {
+      id: 2,
+      brand: "Honda",
+      model: "Civic",
+      year: 2021,
+      price: 95000,
+      image: "/placeholder.svg",
+      mileage: 22000,
+      fuel: "Flex"
+    },
+    {
+      id: 3,
+      brand: "BMW",
+      model: "320i",
+      year: 2022,
+      price: 180000,
+      image: "/placeholder.svg",
+      mileage: 12000,
+      fuel: "Gasolina"
+    }
+  ];
+
+  const handleViewDetails = (vehicle: any) => {
+    // Redirecionar para a página de veículos com o veículo selecionado
+    window.location.href = '/vehicles';
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -15,7 +55,7 @@ const Index = () => {
         
         <div className="relative z-10 text-center text-white px-4 animate-fade-in">
           <h1 className="text-5xl md:text-7xl font-montserrat font-black mb-6">
-            Auto<span className="text-accent">Deal</span>
+            Lord<span className="text-accent">Veículos</span>
           </h1>
           <p className="text-xl md:text-2xl font-opensans mb-8 max-w-2xl mx-auto">
             Sua plataforma premium para compra e venda de carros com excelência e confiança
@@ -35,12 +75,44 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Featured Vehicles Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16 animate-slide-up">
+            <h2 className="text-4xl font-montserrat font-bold text-black mb-4">
+              Veículos em Destaque
+            </h2>
+            <p className="text-lg font-opensans text-gray-600 max-w-2xl mx-auto">
+              Confira nossa seleção especial de veículos premium disponíveis em nosso estoque
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {featuredVehicles.map(vehicle => (
+              <VehicleCard 
+                key={vehicle.id} 
+                vehicle={vehicle} 
+                onViewDetails={handleViewDetails}
+              />
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link to="/vehicles">
+              <Button size="lg" className="bg-accent text-black hover:bg-accent/90 font-opensans font-bold px-8 py-4">
+                Ver Todos os Veículos
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 animate-slide-up">
             <h2 className="text-4xl font-montserrat font-bold text-black mb-4">
-              Por que escolher a AutoDeal?
+              Por que escolher a Lord Veículos?
             </h2>
             <p className="text-lg font-opensans text-gray-600 max-w-2xl mx-auto">
               Oferecemos a melhor experiência em compra e venda de veículos com tecnologia de ponta

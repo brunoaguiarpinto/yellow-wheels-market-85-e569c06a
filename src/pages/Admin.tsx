@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,12 +20,12 @@ const Admin = () => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simple validation - replace with real authentication
-    if (username === "admin" && password === "123456") {
+    // Senha padrão admin/admin
+    if (username === "admin" && password === "admin") {
       setIsLoggedIn(true);
       toast({
         title: "Login realizado com sucesso!",
-        description: "Bem-vindo ao painel administrativo.",
+        description: "Bem-vindo ao painel administrativo da Lord Veículos.",
       });
     } else {
       toast({
@@ -50,7 +49,7 @@ const Admin = () => {
               Painel Administrativo
             </CardTitle>
             <p className="font-opensans text-gray-600">
-              Faça login para acessar o sistema
+              Lord Veículos - Faça login para acessar o sistema
             </p>
           </CardHeader>
           <CardContent>
@@ -62,7 +61,7 @@ const Admin = () => {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Digite seu usuário"
+                  placeholder="Digite: admin"
                   className="font-opensans"
                 />
               </div>
@@ -73,7 +72,7 @@ const Admin = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Digite sua senha"
+                  placeholder="Digite: admin"
                   className="font-opensans"
                 />
               </div>
@@ -104,7 +103,7 @@ const Admin = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-montserrat font-bold">
-              Painel Administrativo
+              Painel Administrativo - Lord Veículos
             </h1>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
@@ -256,7 +255,7 @@ const Admin = () => {
                     <TableRow>
                       <TableCell className="font-opensans">João Silva</TableCell>
                       <TableCell className="font-opensans">Vendedor</TableCell>
-                      <TableCell className="font-opensans">joao@autodeal.com</TableCell>
+                      <TableCell className="font-opensans">joao@lordveiculos.com</TableCell>
                       <TableCell className="font-opensans">12 veículos</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
