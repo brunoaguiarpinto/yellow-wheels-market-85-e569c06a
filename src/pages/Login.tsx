@@ -2,34 +2,25 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, Lock, Building2, Shield } from "lucide-react";
+import { Building2, Shield, User } from "lucide-react";
+import AdminLoginTab from "@/components/auth/AdminLoginTab";
+import EmployeeLoginTab from "@/components/auth/EmployeeLoginTab";
 
 const Login = () => {
-  const [adminCredentials, setAdminCredentials] = useState({
-    username: "",
-    password: ""
-  });
-  const [employeeCredentials, setEmployeeCredentials] = useState({
-    email: "",
-    password: ""
-  });
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleAdminLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAdminLogin = async (credentials: { username: string; password: string }) => {
     setIsLoading(true);
 
     try {
-      const success = await login(adminCredentials.username, adminCredentials.password, 'admin');
+      const success = await login(credentials.username, credentials.password, 'admin');
       
       if (success) {
         toast({
@@ -55,12 +46,11 @@ const Login = () => {
     }
   };
 
-  const handleEmployeeLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEmployeeLogin = async (credentials: { email: string; password: string }) => {
     setIsLoading(true);
 
     try {
-      const success = await login(employeeCredentials.email, employeeCredentials.password, 'employee');
+      const success = await login(credentials.email, credentials.password, 'employee');
       
       if (success) {
         toast({
@@ -116,87 +106,11 @@ const Login = () => {
             </TabsList>
 
             <TabsContent value="admin">
-              <form onSubmit={handleAdminLogin} className="space-y-4">
-                <div>
-                  <Label htmlFor="admin-username" className="font-opensans">Usuário</Label>
-                  <div className="relative">
-                    <Shield className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="admin-username"
-                      type="text"
-                      value={adminCredentials.username}
-                      onChange={(e) => setAdminCredentials({...adminCredentials, username: e.target.value})}
-                      placeholder="Digite: admin"
-                      className="font-opensans pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="admin-password" className="font-opensans">Senha</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="admin-password"
-                      type="password"
-                      value={adminCredentials.password}
-                      onChange={(e) => setAdminCredentials({...adminCredentials, password: e.target.value})}
-                      placeholder="Digite: admin"
-                      className="font-opensans pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-accent text-black hover:bg-accent/90 font-opensans font-semibold"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Entrando..." : "Entrar como Administrador"}
-                </Button>
-              </form>
+              <AdminLoginTab onSubmit={handleAdminLogin} isLoading={isLoading} />
             </TabsContent>
 
             <TabsContent value="employee">
-              <form onSubmit={handleEmployeeLogin} className="space-y-4">
-                <div>
-                  <Label htmlFor="employee-email" className="font-opensans">Email</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="employee-email"
-                      type="email"
-                      value={employeeCredentials.email}
-                      onChange={(e) => setEmployeeCredentials({...employeeCredentials, email: e.target.value})}
-                      placeholder="seu.email@lordveiculos.com"
-                      className="font-opensans pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="employee-password" className="font-opensans">Senha</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="employee-password"
-                      type="password"
-                      value={employeeCredentials.password}
-                      onChange={(e) => setEmployeeCredentials({...employeeCredentials, password: e.target.value})}
-                      placeholder="Digite sua senha"
-                      className="font-opensans pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-accent text-black hover:bg-accent/90 font-opensans font-semibold"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Entrando..." : "Entrar como Funcionário"}
-                </Button>
-              </form>
+              <EmployeeLoginTab onSubmit={handleEmployeeLogin} isLoading={isLoading} />
             </TabsContent>
           </Tabs>
 
