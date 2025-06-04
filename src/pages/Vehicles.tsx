@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Navbar from "@/components/Navbar";
 import VehicleCard from "@/components/VehicleCard";
 import { Search } from "lucide-react";
@@ -26,66 +26,66 @@ const Vehicles = () => {
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
-  // Mock data - substituir por dados reais posteriormente
+  // Dados de veículos - com imagens reais
   const vehicles: Vehicle[] = [
     {
       id: 1,
       brand: "Toyota",
-      model: "Corolla",
-      year: 2022,
-      price: 89000,
-      image: "/placeholder.svg",
-      mileage: 15000,
+      model: "Corolla XEi",
+      year: 2023,
+      price: 159900,
+      image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=500&auto=format&fit=crop&q=60",
+      mileage: 12000,
       fuel: "Flex"
-    },
+    }, 
     {
       id: 2,
       brand: "Honda",
-      model: "Civic",
-      year: 2021,
-      price: 95000,
-      image: "/placeholder.svg",
+      model: "Civic Touring",
+      year: 2022,
+      price: 175000,
+      image: "https://images.unsplash.com/photo-1606611013653-84667c136413?w=500&auto=format&fit=crop&q=60",
       mileage: 22000,
       fuel: "Flex"
-    },
+    }, 
     {
       id: 3,
-      brand: "Volkswagen",
-      model: "Jetta",
+      brand: "BMW",
+      model: "320i Sport",
       year: 2023,
-      price: 105000,
-      image: "/placeholder.svg",
+      price: 289900,
+      image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=500&auto=format&fit=crop&q=60",
       mileage: 8000,
-      fuel: "Flex"
+      fuel: "Gasolina"
     },
     {
       id: 4,
-      brand: "BMW",
-      model: "320i",
-      year: 2022,
-      price: 180000,
-      image: "/placeholder.svg",
-      mileage: 12000,
+      brand: "Mercedes-Benz",
+      model: "C200 AMG Line",
+      year: 2023,
+      price: 385000,
+      image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500&auto=format&fit=crop&q=60",
+      mileage: 5000,
       fuel: "Gasolina"
     },
     {
       id: 5,
-      brand: "Mercedes",
-      model: "C200",
-      year: 2021,
-      price: 195000,
-      image: "/placeholder.svg",
+      brand: "Audi",
+      model: "Q5 Prestige",
+      year: 2022,
+      price: 359900,
+      image: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=500&auto=format&fit=crop&q=60",
       mileage: 18000,
       fuel: "Gasolina"
     },
     {
       id: 6,
-      brand: "Audi",
-      model: "A3",
+      brand: "Volkswagen",
+      model: "Tiguan R-Line",
       year: 2023,
-      price: 145000,
-      image: "/placeholder.svg",
-      mileage: 5000,
+      price: 249900,
+      image: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=500&auto=format&fit=crop&q=60",
+      mileage: 9500,
       fuel: "Flex"
     }
   ];
@@ -180,7 +180,7 @@ const Vehicles = () => {
 
           {/* Action Buttons */}
           <div className="flex justify-center space-x-4 mb-8 animate-slide-up">
-            <Button className="bg-gradient-primary hover:bg-gradient-secondary text-white font-opensans font-semibold px-8">
+            <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold px-8">
               Quero Comprar
             </Button>
             <Button variant="outline" className="border-accent text-accent hover:bg-accent hover:text-black font-opensans font-semibold px-8">
@@ -245,7 +245,7 @@ const Vehicles = () => {
               </div>
               
               <div className="flex space-x-4">
-                <Button className="flex-1 bg-gradient-primary hover:bg-gradient-secondary text-white font-opensans font-semibold">
+                <Button className="flex-1 bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
                   Tenho Interesse
                 </Button>
                 <Button variant="outline" className="flex-1 border-accent text-accent hover:bg-accent hover:text-black font-opensans font-semibold">
