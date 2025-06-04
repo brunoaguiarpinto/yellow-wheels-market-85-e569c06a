@@ -93,8 +93,8 @@ const Vehicles = () => {
   const filteredVehicles = vehicles.filter(vehicle => {
     const matchesSearch = vehicle.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          vehicle.model.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesBrand = !selectedBrand || vehicle.brand === selectedBrand;
-    const matchesYear = !selectedYear || vehicle.year.toString() === selectedYear;
+    const matchesBrand = !selectedBrand || selectedBrand === "all" || vehicle.brand === selectedBrand;
+    const matchesYear = !selectedYear || selectedYear === "all" || vehicle.year.toString() === selectedYear;
     
     return matchesSearch && matchesBrand && matchesYear;
   });
@@ -144,7 +144,7 @@ const Vehicles = () => {
                     <SelectValue placeholder="Todas as marcas" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todas as marcas</SelectItem>
+                    <SelectItem value="all">Todas as marcas</SelectItem>
                     {brands.map(brand => (
                       <SelectItem key={brand} value={brand}>{brand}</SelectItem>
                     ))}
@@ -156,7 +156,7 @@ const Vehicles = () => {
                     <SelectValue placeholder="Todos os anos" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos os anos</SelectItem>
+                    <SelectItem value="all">Todos os anos</SelectItem>
                     {years.map(year => (
                       <SelectItem key={year} value={year}>{year}</SelectItem>
                     ))}
