@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,25 +17,72 @@ import Financial from "./Financial";
 import CRM from "./CRM";
 import { useAuth } from "@/contexts/AuthContext";
 
+interface Vehicle {
+  id: string;
+  brand: string;
+  model: string;
+  year: number;
+  price: number;
+  status: string;
+}
+
+interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  interest: string;
+}
+
 const Admin = () => {
   const { isAuthenticated, isAdmin, user, logout, login, isLoading } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [activeTab, setActiveTab] = useState("vehicles");
   const [vehicleDialogOpen, setVehicleDialogOpen] = useState(false);
+  const [vehicleEditDialogOpen, setVehicleEditDialogOpen] = useState(false);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
+  const [customerEditDialogOpen, setCustomerEditDialogOpen] = useState(false);
   const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
   const [employeeEditDialogOpen, setEmployeeEditDialogOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [employees, setEmployees] = useState<any[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [showPasswords, setShowPasswords] = useState<{[key: string]: boolean}>({});
   const { toast } = useToast();
 
   useEffect(() => {
-    // Carregar funcionários do localStorage
+    // Carregar dados do localStorage
     const savedEmployees = localStorage.getItem('employees');
     if (savedEmployees) {
       setEmployees(JSON.parse(savedEmployees));
+    }
+
+    const savedVehicles = localStorage.getItem('vehicles');
+    if (savedVehicles) {
+      setVehicles(JSON.parse(savedVehicles));
+    } else {
+      // Dados iniciais de veículos
+      const initialVehicles = [
+        { id: "1", brand: "Toyota", model: "Corolla", year: 2022, price: 89000, status: "Disponível" }
+      ];
+      setVehicles(initialVehicles);
+      localStorage.setItem('vehicles', JSON.stringify(initialVehicles));
+    }
+
+    const savedCustomers = localStorage.getItem('customers');
+    if (savedCustomers) {
+      setCustomers(JSON.parse(savedCustomers));
+    } else {
+      // Dados iniciais de clientes
+      const initialCustomers = [
+        { id: "1", name: "Maria Santos", email: "maria@email.com", phone: "(11) 99999-9999", interest: "SUV até R$ 100k" }
+      ];
+      setCustomers(initialCustomers);
+      localStorage.setItem('customers', JSON.stringify(initialCustomers));
     }
   }, []);
 
@@ -62,13 +110,70 @@ const Admin = () => {
   };
 
   const handleVehicleSubmit = (data: any) => {
-    console.log("Dados do veículo:", data);
+    if (editingVehicle) {
+      // Atualizar veículo existente
+      const updatedVehicles = vehicles.map(vehicle => 
+        vehicle.id === editingVehicle.id 
+          ? { ...vehicle, ...data, id: editingVehicle.id }
+          : vehicle
+      );
+      setVehicles(updatedVehicles);
+      localStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
+      toast({
+        title: "Veículo atualizado",
+        description: "Os dados do veículo foram atualizados com sucesso.",
+      });
+    } else {
+      // Adicionar novo veículo
+      const newVehicle = {
+        id: Date.now().toString(),
+        ...data,
+        status: "Disponível"
+      };
+      const updatedVehicles = [...vehicles, newVehicle];
+      setVehicles(updatedVehicles);
+      localStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
+      toast({
+        title: "Veículo adicionado",
+        description: "Novo veículo foi adicionado com sucesso.",
+      });
+    }
     setVehicleDialogOpen(false);
+    setVehicleEditDialogOpen(false);
+    setEditingVehicle(null);
   };
 
   const handleCustomerSubmit = (data: any) => {
-    console.log("Dados do cliente:", data);
+    if (editingCustomer) {
+      // Atualizar cliente existente
+      const updatedCustomers = customers.map(customer => 
+        customer.id === editingCustomer.id 
+          ? { ...customer, ...data, id: editingCustomer.id }
+          : customer
+      );
+      setCustomers(updatedCustomers);
+      localStorage.setItem('customers', JSON.stringify(updatedCustomers));
+      toast({
+        title: "Cliente atualizado",
+        description: "Os dados do cliente foram atualizados com sucesso.",
+      });
+    } else {
+      // Adicionar novo cliente
+      const newCustomer = {
+        id: Date.now().toString(),
+        ...data
+      };
+      const updatedCustomers = [...customers, newCustomer];
+      setCustomers(updatedCustomers);
+      localStorage.setItem('customers', JSON.stringify(updatedCustomers));
+      toast({
+        title: "Cliente adicionado",
+        description: "Novo cliente foi adicionado com sucesso.",
+      });
+    }
     setCustomerDialogOpen(false);
+    setCustomerEditDialogOpen(false);
+    setEditingCustomer(null);
   };
 
   const handleEmployeeSubmit = (data: any) => {
@@ -84,6 +189,16 @@ const Admin = () => {
       title: "Funcionário cadastrado com sucesso!",
       description: `Login: ${data.email} | Senha: ${data.password}`,
     });
+  };
+
+  const handleVehicleEdit = (vehicle: Vehicle) => {
+    setEditingVehicle(vehicle);
+    setVehicleEditDialogOpen(true);
+  };
+
+  const handleCustomerEdit = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setCustomerEditDialogOpen(true);
   };
 
   const handleEmployeeEdit = (employee: any) => {
@@ -104,6 +219,26 @@ const Admin = () => {
     toast({
       title: "Funcionário atualizado!",
       description: "Os dados do funcionário foram atualizados com sucesso.",
+    });
+  };
+
+  const deleteVehicle = (vehicleId: string) => {
+    const updatedVehicles = vehicles.filter(vehicle => vehicle.id !== vehicleId);
+    setVehicles(updatedVehicles);
+    localStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
+    toast({
+      title: "Veículo removido",
+      description: "O veículo foi removido do sistema.",
+    });
+  };
+
+  const deleteCustomer = (customerId: string) => {
+    const updatedCustomers = customers.filter(customer => customer.id !== customerId);
+    setCustomers(updatedCustomers);
+    localStorage.setItem('customers', JSON.stringify(updatedCustomers));
+    toast({
+      title: "Cliente removido",
+      description: "O cliente foi removido do sistema.",
     });
   };
 
@@ -164,31 +299,69 @@ const Admin = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <TableRow>
-                      <TableCell className="font-opensans">Toyota</TableCell>
-                      <TableCell className="font-opensans">Corolla</TableCell>
-                      <TableCell className="font-opensans">2022</TableCell>
-                      <TableCell className="font-opensans">R$ 89.000</TableCell>
-                      <TableCell>
-                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-opensans">
-                          Disponível
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="destructive">
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                    {vehicles.map((vehicle) => (
+                      <TableRow key={vehicle.id}>
+                        <TableCell className="font-opensans">{vehicle.brand}</TableCell>
+                        <TableCell className="font-opensans">{vehicle.model}</TableCell>
+                        <TableCell className="font-opensans">{vehicle.year}</TableCell>
+                        <TableCell className="font-opensans">R$ {vehicle.price.toLocaleString()}</TableCell>
+                        <TableCell>
+                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-opensans">
+                            {vehicle.status}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleVehicleEdit(vehicle)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => deleteVehicle(vehicle.id)}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {vehicles.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          <p className="font-opensans text-gray-500">
+                            Nenhum veículo cadastrado ainda.
+                          </p>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
             </Card>
+
+            {/* Dialog de Edição de Veículo */}
+            <Dialog open={vehicleEditDialogOpen} onOpenChange={setVehicleEditDialogOpen}>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="font-montserrat">Editar Veículo</DialogTitle>
+                </DialogHeader>
+                {editingVehicle && (
+                  <VehicleForm 
+                    initialData={editingVehicle}
+                    onSubmit={handleVehicleSubmit}
+                    onCancel={() => {
+                      setVehicleEditDialogOpen(false);
+                      setEditingVehicle(null);
+                    }}
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         );
 
@@ -361,26 +534,64 @@ const Admin = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <TableRow>
-                      <TableCell className="font-opensans">Maria Santos</TableCell>
-                      <TableCell className="font-opensans">maria@email.com</TableCell>
-                      <TableCell className="font-opensans">(11) 99999-9999</TableCell>
-                      <TableCell className="font-opensans">SUV até R$ 100k</TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="destructive">
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                    {customers.map((customer) => (
+                      <TableRow key={customer.id}>
+                        <TableCell className="font-opensans">{customer.name}</TableCell>
+                        <TableCell className="font-opensans">{customer.email}</TableCell>
+                        <TableCell className="font-opensans">{customer.phone}</TableCell>
+                        <TableCell className="font-opensans">{customer.interest}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleCustomerEdit(customer)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => deleteCustomer(customer.id)}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {customers.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          <p className="font-opensans text-gray-500">
+                            Nenhum cliente cadastrado ainda.
+                          </p>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
             </Card>
+
+            {/* Dialog de Edição de Cliente */}
+            <Dialog open={customerEditDialogOpen} onOpenChange={setCustomerEditDialogOpen}>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="font-montserrat">Editar Cliente</DialogTitle>
+                </DialogHeader>
+                {editingCustomer && (
+                  <CustomerForm 
+                    initialData={editingCustomer}
+                    onSubmit={handleCustomerSubmit}
+                    onCancel={() => {
+                      setCustomerEditDialogOpen(false);
+                      setEditingCustomer(null);
+                    }}
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         );
 
