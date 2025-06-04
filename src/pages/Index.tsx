@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MapPin, Phone, Clock, Star } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import VehicleCard from "@/components/VehicleCard";
 
@@ -123,6 +124,87 @@ const Index = () => {
                 Sobre Nós
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Company Information Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16 animate-slide-up">
+            <h2 className="text-4xl font-montserrat font-bold text-black mb-4">
+              Nossa Loja
+            </h2>
+            <p className="text-lg font-opensans text-gray-600 max-w-2xl mx-auto">
+              Garagem de automóveis em Campo Grande, Mato Grosso do Sul
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="flex items-start space-x-4">
+                <MapPin className="h-6 w-6 text-accent mt-1" />
+                <div>
+                  <h3 className="text-xl font-montserrat font-bold text-black mb-2">Endereço</h3>
+                  <p className="font-opensans text-gray-600">
+                    Av. Nelly Martins, 352 - Carandá Bosque<br />
+                    Campo Grande - MS, 79022-395
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4">
+                <Phone className="h-6 w-6 text-accent mt-1" />
+                <div>
+                  <h3 className="text-xl font-montserrat font-bold text-black mb-2">Telefone</h3>
+                  <p className="font-opensans text-gray-600">(67) 3025-7770</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4">
+                <Clock className="h-6 w-6 text-accent mt-1" />
+                <div>
+                  <h3 className="text-xl font-montserrat font-bold text-black mb-2">Horário de Funcionamento</h3>
+                  <p className="font-opensans text-gray-600">
+                    Segunda a Sábado: 08:00 às 18:00<br />
+                    Domingo: Fechado
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white p-8 rounded-lg shadow-xl">
+              <h3 className="text-2xl font-montserrat font-bold text-black mb-6 flex items-center">
+                <Star className="h-6 w-6 text-accent mr-2" />
+                Avaliações dos Clientes
+              </h3>
+              
+              <div className="space-y-6">
+                <div className="border-l-4 border-accent pl-4">
+                  <p className="font-opensans text-gray-700 mb-2">
+                    "Desde o primeiro atendimento até a entrega do veículo."
+                  </p>
+                  <p className="font-opensans text-sm text-gray-500 font-semibold">
+                    - Alex Junior
+                  </p>
+                </div>
+                
+                <div className="border-l-4 border-accent pl-4">
+                  <p className="font-opensans text-gray-700 mb-2">
+                    "Profissionais honestos e transparentes, ótimo atendimento!"
+                  </p>
+                  <p className="font-opensans text-sm text-gray-500 font-semibold">
+                    - Pedro Henrique Goes Arantes
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <p className="font-opensans text-sm text-gray-600 text-center">
+                  Avaliações reais do Google Reviews
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
