@@ -51,7 +51,7 @@ const VehicleCard = ({ vehicle, onViewDetails }: VehicleCardProps) => {
       <CardFooter className="p-6 pt-0 space-x-2">
         <Button 
           onClick={() => onViewDetails(vehicle)}
-          className="flex-1 bg-gradient-primary hover:bg-gradient-secondary text-white font-opensans font-semibold"
+          className="flex-1 bg-black hover:bg-black/90 text-white font-opensans font-semibold"
         >
           Ver Detalhes
         </Button>
