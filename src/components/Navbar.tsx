@@ -11,8 +11,15 @@ const Navbar = () => {
     <nav className="fixed top-0 w-full bg-black/95 backdrop-blur-sm z-50 border-b border-accent/20">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-montserrat font-bold text-white">
-            Lord<span className="text-accent">Veículos</span>
+          <Link to="/" className="flex items-center space-x-3">
+            <img 
+              src="/lovable-uploads/036ab825-6eaf-4b89-80d5-2a042eb149f9.png" 
+              alt="Lord Motors Logo" 
+              className="h-8 w-auto"
+            />
+            <span className="text-2xl font-montserrat font-bold text-white">
+              Lord<span className="text-accent">Motors</span>
+            </span>
           </Link>
           
           <div className="hidden md:flex items-center space-x-8">
