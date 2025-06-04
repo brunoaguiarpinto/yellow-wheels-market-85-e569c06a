@@ -5,6 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import DailyTasksPanel from "@/components/crm/DailyTasksPanel";
+import ClientsModule from "@/components/crm/ClientsModule";
+import AgendaModule from "@/components/crm/AgendaModule";
+import TasksModule from "@/components/crm/TasksModule";
 import { Users, Calendar, CheckSquare, BarChart3 } from "lucide-react";
 
 const CRM = () => {
@@ -60,42 +63,15 @@ const CRM = () => {
         </TabsContent>
 
         <TabsContent value="clients">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gestão de Clientes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-500">
-                Módulo de clientes em desenvolvimento...
-              </p>
-            </CardContent>
-          </Card>
+          <ClientsModule />
         </TabsContent>
 
         <TabsContent value="agenda">
-          <Card>
-            <CardHeader>
-              <CardTitle>Agenda e Compromissos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-500">
-                Módulo de agenda em desenvolvimento...
-              </p>
-            </CardContent>
-          </Card>
+          <AgendaModule />
         </TabsContent>
 
         <TabsContent value="tasks">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gestão de Tarefas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-500">
-                Módulo de tarefas em desenvolvimento...
-              </p>
-            </CardContent>
-          </Card>
+          <TasksModule />
         </TabsContent>
       </Tabs>
     </div>
