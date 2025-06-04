@@ -13,7 +13,7 @@ import EmployeeForm from "@/components/EmployeeForm";
 import EmployeeEditForm from "@/components/EmployeeEditForm";
 import AdminSidebar from "@/components/AdminSidebar";
 import Financial from "./Financial";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Admin = () => {
   const { isAuthenticated, isAdmin, user, logout, login, isLoading } = useAuth();
