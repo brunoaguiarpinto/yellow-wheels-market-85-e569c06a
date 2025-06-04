@@ -19,11 +19,8 @@ import {
   Car, 
   Users, 
   User, 
-  DollarSign,
-  ChevronDown,
-  ChevronRight 
+  DollarSign
 } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface AdminSidebarProps {
   activeTab: string;
@@ -32,8 +29,6 @@ interface AdminSidebarProps {
 }
 
 const AdminSidebar = ({ activeTab, onTabChange, children }: AdminSidebarProps) => {
-  const [isFinanceiroOpen, setIsFinanceiroOpen] = useState(true);
-
   const menuItems = [
     {
       title: "Veículos",
@@ -49,12 +44,10 @@ const AdminSidebar = ({ activeTab, onTabChange, children }: AdminSidebarProps) =
       title: "Clientes",
       icon: User,
       key: "customers"
-    }
-  ];
-
-  const financeiroItems = [
+    },
     {
       title: "Financeiro",
+      icon: DollarSign,
       key: "financial"
     }
   ];
@@ -86,47 +79,6 @@ const AdminSidebar = ({ activeTab, onTabChange, children }: AdminSidebarProps) =
                   ))}
                 </SidebarMenu>
               </SidebarGroupContent>
-            </SidebarGroup>
-
-            <Separator className="my-2" />
-
-            <SidebarGroup>
-              <Collapsible open={isFinanceiroOpen} onOpenChange={setIsFinanceiroOpen}>
-                <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="cursor-pointer hover:bg-sidebar-accent rounded-md flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4" />
-                      Financeiro
-                    </div>
-                    {isFinanceiroOpen ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4" />
-                    )}
-                  </SidebarGroupLabel>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      {financeiroItems.map((item) => (
-                        <SidebarMenuItem key={item.key}>
-                          <SidebarMenuButton 
-                            asChild
-                            isActive={activeTab === item.key}
-                          >
-                            <button
-                              onClick={() => onTabChange(item.key)}
-                              className="w-full flex items-center gap-2 pl-6"
-                            >
-                              <span>{item.title}</span>
-                            </button>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </CollapsibleContent>
-              </Collapsible>
             </SidebarGroup>
           </SidebarContent>
         </Sidebar>

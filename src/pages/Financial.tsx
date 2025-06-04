@@ -1,15 +1,15 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/use-toast";
 import VehiclePurchaseForm from "@/components/financial/VehiclePurchaseForm";
 import VehicleStatusManager from "@/components/financial/VehicleStatusManager";
+import SalesForm from "@/components/financial/SalesForm";
 import { DollarSign, ShoppingCart, TrendingUp, AlertCircle, Lock, Plus, Car } from "lucide-react";
 
 const Financial = () => {
@@ -21,7 +21,6 @@ const Financial = () => {
     canManageInventory,
     canViewSales,
     canCreateSales,
-    hasPermission 
   } = usePermissions();
   const { toast } = useToast();
   
@@ -30,7 +29,6 @@ const Financial = () => {
   const [sales, setSales] = useState(() => JSON.parse(localStorage.getItem('sales') || '[]'));
   const [showPurchaseForm, setShowPurchaseForm] = useState(false);
   const [showSaleForm, setShowSaleForm] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   // Verificação de autenticação e permissões
   if (!isAuthenticated || !user) {
@@ -143,6 +141,9 @@ const Financial = () => {
     localStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
     
     setShowSaleForm(false);
+    refreshSales();
+    refreshVehicles();
+    
     toast({
       title: "Venda registrada com sucesso!",
       description: `Veículo vendido por R$ ${parseFloat(saleData.salePrice).toLocaleString()}`,
@@ -390,19 +391,10 @@ const Financial = () => {
                   <DialogHeader>
                     <DialogTitle>Registrar Nova Venda</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4">
-                    <p className="text-sm text-gray-600">
-                      Formulário de venda será implementado aqui
-                    </p>
-                    <div className="flex justify-end space-x-2">
-                      <Button variant="outline" onClick={() => setShowSaleForm(false)}>
-                        Cancelar
-                      </Button>
-                      <Button onClick={() => setShowSaleForm(false)}>
-                        Salvar Venda
-                      </Button>
-                    </div>
-                  </div>
+                  <SalesForm 
+                    onSubmit={handleSaleSubmit}
+                    onCancel={() => setShowSaleForm(false)}
+                  />
                 </DialogContent>
               </Dialog>
             </>
