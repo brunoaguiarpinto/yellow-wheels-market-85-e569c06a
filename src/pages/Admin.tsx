@@ -13,6 +13,7 @@ import EmployeeForm from "@/components/EmployeeForm";
 import EmployeeEditForm from "@/components/EmployeeEditForm";
 import AdminSidebar from "@/components/AdminSidebar";
 import Financial from "./Financial";
+import CRM from "./CRM";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Admin = () => {
@@ -382,6 +383,9 @@ const Admin = () => {
             </Card>
           </div>
         );
+
+      case "crm":
+        return <CRM />;
 
       case "financial":
         return <Financial />;

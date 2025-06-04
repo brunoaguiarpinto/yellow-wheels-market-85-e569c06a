@@ -19,7 +19,8 @@ import {
   Car, 
   Users, 
   User, 
-  DollarSign
+  DollarSign,
+  UserCheck
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -44,6 +45,11 @@ const AdminSidebar = ({ activeTab, onTabChange, children }: AdminSidebarProps) =
       title: "Clientes",
       icon: User,
       key: "customers"
+    },
+    {
+      title: "CRM",
+      icon: UserCheck,
+      key: "crm"
     },
     {
       title: "Financeiro",
