@@ -41,9 +41,9 @@ const Admin = () => {
   const [vehicleDialogOpen, setVehicleDialogOpen] = useState(false);
   const [vehicleEditDialogOpen, setVehicleEditDialogOpen] = useState(false);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
-  const [customerEditDialogOpen] = useState(false);
+  const [customerEditDialogOpen, setCustomerEditDialogOpen] = useState(false);
   const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
-  const [employeeEditDialogOpen] = useState(false);
+  const [employeeEditDialogOpen, setEmployeeEditDialogOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -345,16 +345,6 @@ const Admin = () => {
                 <DialogHeader>
                   <DialogTitle className="font-montserrat">Editar Veículo</DialogTitle>
                 </DialogHeader>
-                {/* {editingVehicle && (
-                  <VehicleForm 
-                    vehicle={editingVehicle}
-                    onSubmit={handleVehicleSubmit}
-                    onCancel={() => {
-                      setVehicleEditDialogOpen(false);
-                      setEditingVehicle(null);
-                    }}
-                  />
-                )} */}
                 <VehicleForm 
                   onSubmit={handleVehicleSubmit}
                   onCancel={() => {
@@ -582,16 +572,6 @@ const Admin = () => {
                 <DialogHeader>
                   <DialogTitle className="font-montserrat">Editar Cliente</DialogTitle>
                 </DialogHeader>
-                {/* {editingCustomer && (
-                  <CustomerForm 
-                    customer={editingCustomer}
-                    onSubmit={handleCustomerSubmit}
-                    onCancel={() => {
-                      setCustomerEditDialogOpen(false);
-                      setEditingCustomer(null);
-                    }}
-                  />
-                )} */}
                 <CustomerForm 
                   onSubmit={handleCustomerSubmit}
                   onCancel={() => {
