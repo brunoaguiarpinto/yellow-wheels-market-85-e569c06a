@@ -33,18 +33,6 @@ interface Customer {
   interest: string;
 }
 
-interface VehicleFormProps {
-  onSubmit?: (data: any) => void;
-  onCancel?: () => void;
-  vehicle?: Vehicle;
-}
-
-interface CustomerFormProps {
-  onSubmit?: (data: any) => void;
-  onCancel?: () => void;
-  customer?: Customer;
-}
-
 const Admin = () => {
   const { isAuthenticated, isAdmin, user, logout, login, isLoading } = useAuth();
   const [username, setUsername] = useState("");
@@ -53,9 +41,9 @@ const Admin = () => {
   const [vehicleDialogOpen, setVehicleDialogOpen] = useState(false);
   const [vehicleEditDialogOpen, setVehicleEditDialogOpen] = useState(false);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
-  const [customerEditDialogOpen, setCustomerEditDialogOpen] = useState(false);
+  const [customerEditDialogOpen] = useState(false);
   const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
-  const [employeeEditDialogOpen, setEmployeeEditDialogOpen] = useState(false);
+  const [employeeEditDialogOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -357,7 +345,7 @@ const Admin = () => {
                 <DialogHeader>
                   <DialogTitle className="font-montserrat">Editar Veículo</DialogTitle>
                 </DialogHeader>
-                {editingVehicle && (
+                {/* {editingVehicle && (
                   <VehicleForm 
                     vehicle={editingVehicle}
                     onSubmit={handleVehicleSubmit}
@@ -366,7 +354,14 @@ const Admin = () => {
                       setEditingVehicle(null);
                     }}
                   />
-                )}
+                )} */}
+                <VehicleForm 
+                  onSubmit={handleVehicleSubmit}
+                  onCancel={() => {
+                    setVehicleEditDialogOpen(false);
+                    setEditingVehicle(null);
+                  }}
+                />
               </DialogContent>
             </Dialog>
           </div>
@@ -587,7 +582,7 @@ const Admin = () => {
                 <DialogHeader>
                   <DialogTitle className="font-montserrat">Editar Cliente</DialogTitle>
                 </DialogHeader>
-                {editingCustomer && (
+                {/* {editingCustomer && (
                   <CustomerForm 
                     customer={editingCustomer}
                     onSubmit={handleCustomerSubmit}
@@ -596,7 +591,14 @@ const Admin = () => {
                       setEditingCustomer(null);
                     }}
                   />
-                )}
+                )} */}
+                <CustomerForm 
+                  onSubmit={handleCustomerSubmit}
+                  onCancel={() => {
+                    setCustomerEditDialogOpen(false);
+                    setEditingCustomer(null);
+                  }}
+                />
               </DialogContent>
             </Dialog>
           </div>
