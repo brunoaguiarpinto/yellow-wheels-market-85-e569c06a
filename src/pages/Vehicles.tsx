@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,70 +25,34 @@ const Vehicles = () => {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
 
-  // Dados de veículos - com imagens reais
-  const vehicles: Vehicle[] = [
-    {
-      id: 1,
-      brand: "Toyota",
-      model: "Corolla XEi",
-      year: 2023,
-      price: 159900,
-      image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=500&auto=format&fit=crop&q=60",
-      mileage: 12000,
-      fuel: "Flex"
-    }, 
-    {
-      id: 2,
-      brand: "Honda",
-      model: "Civic Touring",
-      year: 2022,
-      price: 175000,
-      image: "https://images.unsplash.com/photo-1606611013653-84667c136413?w=500&auto=format&fit=crop&q=60",
-      mileage: 22000,
-      fuel: "Flex"
-    }, 
-    {
-      id: 3,
-      brand: "BMW",
-      model: "320i Sport",
-      year: 2023,
-      price: 289900,
-      image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=500&auto=format&fit=crop&q=60",
-      mileage: 8000,
-      fuel: "Gasolina"
-    },
-    {
-      id: 4,
-      brand: "Mercedes-Benz",
-      model: "C200 AMG Line",
-      year: 2023,
-      price: 385000,
-      image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500&auto=format&fit=crop&q=60",
-      mileage: 5000,
-      fuel: "Gasolina"
-    },
-    {
-      id: 5,
-      brand: "Audi",
-      model: "Q5 Prestige",
-      year: 2022,
-      price: 359900,
-      image: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=500&auto=format&fit=crop&q=60",
-      mileage: 18000,
-      fuel: "Gasolina"
-    },
-    {
-      id: 6,
-      brand: "Volkswagen",
-      model: "Tiguan R-Line",
-      year: 2023,
-      price: 249900,
-      image: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=500&auto=format&fit=crop&q=60",
-      mileage: 9500,
-      fuel: "Flex"
+  // Carregar veículos do localStorage
+  useEffect(() => {
+    const savedVehicles = localStorage.getItem('vehicles');
+    if (savedVehicles) {
+      try {
+        const parsedVehicles = JSON.parse(savedVehicles);
+        // Converter os dados do admin para o formato esperado pela página pública
+        const formattedVehicles = parsedVehicles.map((vehicle: any) => ({
+          id: parseInt(vehicle.id) || Date.now(),
+          brand: vehicle.brand || '',
+          model: vehicle.model || '',
+          year: vehicle.year || 0,
+          price: vehicle.price || 0,
+          image: vehicle.image || 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=500&auto=format&fit=crop&q=60',
+          mileage: vehicle.mileage || 0,
+          fuel: vehicle.fuel || 'Flex'
+        }));
+        setVehicles(formattedVehicles);
+      } catch (error) {
+        console.error('Erro ao carregar veículos do localStorage:', error);
+        setVehicles([]);
+      }
+    } else {
+      setVehicles([]);
     }
-  ];
+  }, []);
 
   const filteredVehicles = vehicles.filter(vehicle => {
     const matchesSearch = vehicle.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -99,8 +63,8 @@ const Vehicles = () => {
     return matchesSearch && matchesBrand && matchesYear;
   });
 
-  const brands = [...new Set(vehicles.map(v => v.brand))];
-  const years = [...new Set(vehicles.map(v => v.year.toString()))].sort().reverse();
+  const brands = [...new Set(vehicles.map(v => v.brand))].filter(Boolean);
+  const years = [...new Set(vehicles.map(v => v.year.toString()))].filter(Boolean).sort().reverse();
 
   const handleViewDetails = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
@@ -189,17 +153,37 @@ const Vehicles = () => {
           </div>
 
           {/* Vehicles Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 animate-slide-up">
-            {filteredVehicles.map(vehicle => (
-              <VehicleCard 
-                key={vehicle.id} 
-                vehicle={vehicle} 
-                onViewDetails={handleViewDetails}
-              />
-            ))}
-          </div>
+          {vehicles.length > 0 && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 animate-slide-up">
+              {filteredVehicles.map(vehicle => (
+                <VehicleCard 
+                  key={vehicle.id} 
+                  vehicle={vehicle} 
+                  onViewDetails={handleViewDetails}
+                />
+              ))}
+            </div>
+          )}
 
-          {filteredVehicles.length === 0 && (
+          {/* Empty State */}
+          {vehicles.length === 0 && (
+            <div className="text-center py-12 animate-fade-in">
+              <div className="max-w-md mx-auto">
+                <h3 className="text-2xl font-montserrat font-bold text-gray-900 mb-4">
+                  Estoque em Construção
+                </h3>
+                <p className="text-lg font-opensans text-gray-600 mb-6">
+                  Estamos preparando nosso estoque com os melhores veículos. Em breve você encontrará aqui uma seleção incrível de carros!
+                </p>
+                <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
+                  Entre em Contato
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* No Results State */}
+          {vehicles.length > 0 && filteredVehicles.length === 0 && (
             <div className="text-center py-12 animate-fade-in">
               <p className="text-xl font-opensans text-gray-600">
                 Nenhum veículo encontrado com os filtros selecionados.
