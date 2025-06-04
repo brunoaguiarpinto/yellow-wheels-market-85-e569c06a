@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +33,18 @@ interface Customer {
   interest: string;
 }
 
+interface VehicleFormProps {
+  onSubmit?: (data: any) => void;
+  onCancel?: () => void;
+  vehicle?: Vehicle;
+}
+
+interface CustomerFormProps {
+  onSubmit?: (data: any) => void;
+  onCancel?: () => void;
+  customer?: Customer;
+}
+
 const Admin = () => {
   const { isAuthenticated, isAdmin, user, logout, login, isLoading } = useAuth();
   const [username, setUsername] = useState("");
@@ -65,10 +76,8 @@ const Admin = () => {
     if (savedVehicles) {
       setVehicles(JSON.parse(savedVehicles));
     } else {
-      // Dados iniciais de veículos
-      const initialVehicles = [
-        { id: "1", brand: "Toyota", model: "Corolla", year: 2022, price: 89000, status: "Disponível" }
-      ];
+      // Array vazio para veículos
+      const initialVehicles: Vehicle[] = [];
       setVehicles(initialVehicles);
       localStorage.setItem('vehicles', JSON.stringify(initialVehicles));
     }
@@ -77,10 +86,8 @@ const Admin = () => {
     if (savedCustomers) {
       setCustomers(JSON.parse(savedCustomers));
     } else {
-      // Dados iniciais de clientes
-      const initialCustomers = [
-        { id: "1", name: "Maria Santos", email: "maria@email.com", phone: "(11) 99999-9999", interest: "SUV até R$ 100k" }
-      ];
+      // Array vazio para clientes
+      const initialCustomers: Customer[] = [];
       setCustomers(initialCustomers);
       localStorage.setItem('customers', JSON.stringify(initialCustomers));
     }
@@ -352,7 +359,7 @@ const Admin = () => {
                 </DialogHeader>
                 {editingVehicle && (
                   <VehicleForm 
-                    initialData={editingVehicle}
+                    vehicle={editingVehicle}
                     onSubmit={handleVehicleSubmit}
                     onCancel={() => {
                       setVehicleEditDialogOpen(false);
@@ -582,7 +589,7 @@ const Admin = () => {
                 </DialogHeader>
                 {editingCustomer && (
                   <CustomerForm 
-                    initialData={editingCustomer}
+                    customer={editingCustomer}
                     onSubmit={handleCustomerSubmit}
                     onCancel={() => {
                       setCustomerEditDialogOpen(false);
