@@ -28,7 +28,7 @@ const AddressSection = ({ register, setValue, errors }: AddressSectionProps) => 
               className="font-opensans" 
             />
             {errors.address && (
-              <p className="text-red-500 text-sm">{errors.address.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.address.message || "Campo obrigatório")}</p>
             )}
           </div>
           <div>
@@ -40,7 +40,7 @@ const AddressSection = ({ register, setValue, errors }: AddressSectionProps) => 
               className="font-opensans" 
             />
             {errors.number && (
-              <p className="text-red-500 text-sm">{errors.number.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.number.message || "Campo obrigatório")}</p>
             )}
           </div>
         </div>
@@ -64,7 +64,7 @@ const AddressSection = ({ register, setValue, errors }: AddressSectionProps) => 
               className="font-opensans" 
             />
             {errors.neighborhood && (
-              <p className="text-red-500 text-sm">{errors.neighborhood.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.neighborhood.message || "Campo obrigatório")}</p>
             )}
           </div>
         </div>
@@ -79,7 +79,7 @@ const AddressSection = ({ register, setValue, errors }: AddressSectionProps) => 
               className="font-opensans" 
             />
             {errors.city && (
-              <p className="text-red-500 text-sm">{errors.city.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.city.message || "Campo obrigatório")}</p>
             )}
           </div>
           <div>
@@ -102,7 +102,7 @@ const AddressSection = ({ register, setValue, errors }: AddressSectionProps) => 
               </SelectContent>
             </Select>
             {errors.state && (
-              <p className="text-red-500 text-sm">{errors.state.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.state.message || "Campo obrigatório")}</p>
             )}
           </div>
           <div>
@@ -114,7 +114,7 @@ const AddressSection = ({ register, setValue, errors }: AddressSectionProps) => 
               className="font-opensans" 
             />
             {errors.zipCode && (
-              <p className="text-red-500 text-sm">{errors.zipCode.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.zipCode.message || "Campo obrigatório")}</p>
             )}
           </div>
         </div>

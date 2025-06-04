@@ -30,7 +30,7 @@ const PersonalDataSection = ({ register, errors }: PersonalDataSectionProps) => 
               className="font-opensans" 
             />
             {errors.name && (
-              <p className="text-red-500 text-sm">{errors.name.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.name.message || "Campo obrigatório")}</p>
             )}
           </div>
           <div>
@@ -42,7 +42,7 @@ const PersonalDataSection = ({ register, errors }: PersonalDataSectionProps) => 
               className="font-opensans" 
             />
             {errors.cpf && (
-              <p className="text-red-500 text-sm">{errors.cpf.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.cpf.message || "Campo obrigatório")}</p>
             )}
           </div>
         </div>
@@ -61,7 +61,7 @@ const PersonalDataSection = ({ register, errors }: PersonalDataSectionProps) => 
               />
             </div>
             {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.email.message || "Campo obrigatório")}</p>
             )}
           </div>
           <div>
@@ -76,7 +76,7 @@ const PersonalDataSection = ({ register, errors }: PersonalDataSectionProps) => 
               />
             </div>
             {errors.phone && (
-              <p className="text-red-500 text-sm">{errors.phone.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.phone.message || "Campo obrigatório")}</p>
             )}
           </div>
         </div>

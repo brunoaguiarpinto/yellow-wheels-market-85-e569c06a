@@ -27,7 +27,7 @@ const ContactInfoSection = ({ register, errors }: ContactInfoSectionProps) => {
               className="font-opensans" 
             />
             {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.email.message || "Campo obrigatório")}</p>
             )}
           </div>
           <div>
@@ -39,7 +39,7 @@ const ContactInfoSection = ({ register, errors }: ContactInfoSectionProps) => {
               className="font-opensans" 
             />
             {errors.phone && (
-              <p className="text-red-500 text-sm">{errors.phone.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.phone.message || "Campo obrigatório")}</p>
             )}
           </div>
         </div>

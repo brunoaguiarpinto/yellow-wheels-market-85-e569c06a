@@ -26,7 +26,7 @@ const PersonalInfoSection = ({ register, errors }: PersonalInfoSectionProps) => 
               className="font-opensans" 
             />
             {errors.name && (
-              <p className="text-red-500 text-sm">{errors.name.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.name.message || "Campo obrigatório")}</p>
             )}
           </div>
           <div>
@@ -38,7 +38,7 @@ const PersonalInfoSection = ({ register, errors }: PersonalInfoSectionProps) => 
               className="font-opensans" 
             />
             {errors.cpf && (
-              <p className="text-red-500 text-sm">{errors.cpf.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.cpf.message || "Campo obrigatório")}</p>
             )}
           </div>
         </div>

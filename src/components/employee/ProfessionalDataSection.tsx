@@ -41,7 +41,7 @@ const ProfessionalDataSection = ({ register, setValue, watch, errors }: Professi
               </SelectContent>
             </Select>
             {errors.position && (
-              <p className="text-red-500 text-sm">{errors.position.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.position.message || "Campo obrigatório")}</p>
             )}
           </div>
           
@@ -62,7 +62,7 @@ const ProfessionalDataSection = ({ register, setValue, watch, errors }: Professi
               </SelectContent>
             </Select>
             {errors.department && (
-              <p className="text-red-500 text-sm">{errors.department.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.department.message || "Campo obrigatório")}</p>
             )}
           </div>
 
@@ -75,7 +75,7 @@ const ProfessionalDataSection = ({ register, setValue, watch, errors }: Professi
               className="font-opensans" 
             />
             {errors.hireDate && (
-              <p className="text-red-500 text-sm">{errors.hireDate.message}</p>
+              <p className="text-red-500 text-sm">{String(errors.hireDate.message || "Campo obrigatório")}</p>
             )}
           </div>
         </div>
