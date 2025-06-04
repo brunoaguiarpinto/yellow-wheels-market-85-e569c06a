@@ -5,11 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Calendar, Clock, User, Car } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus, Search, Calendar, Clock } from "lucide-react";
 import { Appointment, AppointmentType, AppointmentStatus } from "@/types/crm";
+import { useToast } from "@/hooks/use-toast";
+import AppointmentForm from "./AppointmentForm";
 
 const AgendaModule = () => {
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const { toast } = useToast();
+
   const [appointments, setAppointments] = useState<Appointment[]>([
     {
       id: "1",
@@ -17,7 +24,7 @@ const AgendaModule = () => {
       customerName: "João Silva",
       type: AppointmentType.TEST_DRIVE,
       title: "Test Drive - Honda Civic",
-      description: "Test drive agendado para o Honda Civic 2024",
+      description: "Cliente quer testar o modelo 2024",
       date: "2024-01-20",
       time: "14:00",
       status: AppointmentStatus.SCHEDULED,
@@ -25,7 +32,6 @@ const AgendaModule = () => {
       employeeName: "Maria Santos",
       reminder: true,
       reminderTime: 30,
-      vehicleId: "civic-2024",
       createdAt: "2024-01-15"
     },
     {
@@ -34,117 +40,117 @@ const AgendaModule = () => {
       customerName: "Ana Costa",
       type: AppointmentType.MEETING,
       title: "Reunião de Negociação",
-      description: "Discussão sobre financiamento e condições de pagamento",
+      description: "Discussão sobre financiamento",
       date: "2024-01-18",
-      time: "10:30",
+      time: "10:00",
       status: AppointmentStatus.CONFIRMED,
       employeeId: "2",
       employeeName: "Carlos Lima",
       reminder: true,
       reminderTime: 60,
       createdAt: "2024-01-14"
-    },
-    {
-      id: "3",
-      customerId: "1",
-      customerName: "João Silva",
-      type: AppointmentType.CALL_BACK,
-      title: "Retorno - Financiamento",
-      description: "Ligar para verificar status do financiamento",
-      date: "2024-01-22",
-      time: "16:00",
-      status: AppointmentStatus.SCHEDULED,
-      employeeId: "1",
-      employeeName: "Maria Santos",
-      reminder: false,
-      createdAt: "2024-01-16"
     }
   ]);
 
-  const getTypeColor = (type: AppointmentType) => {
-    switch (type) {
-      case AppointmentType.TEST_DRIVE:
-        return "bg-blue-100 text-blue-800";
-      case AppointmentType.MEETING:
-        return "bg-green-100 text-green-800";
-      case AppointmentType.CALL_BACK:
-        return "bg-orange-100 text-orange-800";
-      case AppointmentType.DOCUMENTATION:
-        return "bg-purple-100 text-purple-800";
-      case AppointmentType.DELIVERY:
-        return "bg-indigo-100 text-indigo-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+  // Mock customers data for the form
+  const customers = [
+    { id: "1", name: "João Silva" },
+    { id: "2", name: "Ana Costa" }
+  ];
+
+  const handleNewAppointment = () => {
+    setEditingAppointment(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEditAppointment = (appointment: Appointment) => {
+    setEditingAppointment(appointment);
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmitAppointment = (data: any) => {
+    if (editingAppointment) {
+      setAppointments(prev => prev.map(appointment => 
+        appointment.id === editingAppointment.id 
+          ? { ...appointment, ...data, updatedAt: new Date().toISOString() }
+          : appointment
+      ));
+      toast({
+        title: "Agendamento atualizado",
+        description: "O agendamento foi atualizado com sucesso.",
+      });
+    } else {
+      const newAppointment: Appointment = {
+        id: Date.now().toString(),
+        ...data,
+        employeeId: "1",
+        employeeName: "Usuário Atual",
+        createdAt: new Date().toISOString(),
+      };
+      setAppointments(prev => [...prev, newAppointment]);
+      toast({
+        title: "Agendamento criado",
+        description: "Novo agendamento foi criado com sucesso.",
+      });
     }
+    setIsDialogOpen(false);
+    setEditingAppointment(null);
+  };
+
+  const handleCancel = () => {
+    setIsDialogOpen(false);
+    setEditingAppointment(null);
   };
 
   const getTypeLabel = (type: AppointmentType) => {
     switch (type) {
-      case AppointmentType.TEST_DRIVE:
-        return "Test Drive";
-      case AppointmentType.MEETING:
-        return "Reunião";
-      case AppointmentType.CALL_BACK:
-        return "Retorno";
-      case AppointmentType.DOCUMENTATION:
-        return "Documentação";
-      case AppointmentType.DELIVERY:
-        return "Entrega";
-      default:
-        return "Outros";
+      case AppointmentType.TEST_DRIVE: return "Test Drive";
+      case AppointmentType.MEETING: return "Reunião";
+      case AppointmentType.CALL_BACK: return "Retorno de Ligação";
+      case AppointmentType.DOCUMENTATION: return "Documentação";
+      case AppointmentType.DELIVERY: return "Entrega";
+      default: return "Outros";
     }
   };
 
   const getStatusColor = (status: AppointmentStatus) => {
     switch (status) {
-      case AppointmentStatus.SCHEDULED:
-        return "bg-yellow-100 text-yellow-800";
-      case AppointmentStatus.CONFIRMED:
-        return "bg-green-100 text-green-800";
-      case AppointmentStatus.COMPLETED:
-        return "bg-blue-100 text-blue-800";
-      case AppointmentStatus.CANCELLED:
-        return "bg-red-100 text-red-800";
-      case AppointmentStatus.NO_SHOW:
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      case AppointmentStatus.SCHEDULED: return "bg-blue-100 text-blue-800";
+      case AppointmentStatus.CONFIRMED: return "bg-green-100 text-green-800";
+      case AppointmentStatus.COMPLETED: return "bg-gray-100 text-gray-800";
+      case AppointmentStatus.CANCELLED: return "bg-red-100 text-red-800";
+      case AppointmentStatus.NO_SHOW: return "bg-orange-100 text-orange-800";
+      default: return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusLabel = (status: AppointmentStatus) => {
     switch (status) {
-      case AppointmentStatus.SCHEDULED:
-        return "Agendado";
-      case AppointmentStatus.CONFIRMED:
-        return "Confirmado";
-      case AppointmentStatus.COMPLETED:
-        return "Concluído";
-      case AppointmentStatus.CANCELLED:
-        return "Cancelado";
-      case AppointmentStatus.NO_SHOW:
-        return "Não Compareceu";
-      default:
-        return status;
+      case AppointmentStatus.SCHEDULED: return "Agendado";
+      case AppointmentStatus.CONFIRMED: return "Confirmado";
+      case AppointmentStatus.COMPLETED: return "Concluído";
+      case AppointmentStatus.CANCELLED: return "Cancelado";
+      case AppointmentStatus.NO_SHOW: return "Não Compareceu";
+      default: return status;
     }
   };
 
   const filteredAppointments = appointments.filter(appointment =>
-    appointment.date === selectedDate
+    appointment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    appointment.customerName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const todayAppointments = appointments.filter(appointment =>
-    appointment.date === new Date().toISOString().split('T')[0]
-  );
+  const todayAppointments = appointments.filter(apt => apt.date === new Date().toISOString().split('T')[0]);
+  const upcomingAppointments = appointments.filter(apt => new Date(apt.date) > new Date());
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Agenda e Compromissos</h2>
+          <h2 className="text-2xl font-bold">Agenda</h2>
           <p className="text-gray-600">Gerencie seus agendamentos e compromissos</p>
         </div>
-        <Button className="flex items-center space-x-2">
+        <Button onClick={handleNewAppointment} className="flex items-center space-x-2">
           <Plus className="h-4 w-4" />
           <span>Novo Agendamento</span>
         </Button>
@@ -154,63 +160,66 @@ const AgendaModule = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5" />
+              <Calendar className="h-5 w-5 text-blue-600" />
               <span>Hoje</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{todayAppointments.length}</div>
-            <p className="text-sm text-gray-600">compromissos agendados</p>
+            <p className="text-sm text-gray-600">agendamentos hoje</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Clock className="h-5 w-5" />
-              <span>Próximo</span>
+              <Clock className="h-5 w-5 text-green-600" />
+              <span>Próximos</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {todayAppointments.length > 0 ? (
-              <div>
-                <div className="font-medium">{todayAppointments[0].time}</div>
-                <p className="text-sm text-gray-600">{todayAppointments[0].title}</p>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-600">Nenhum compromisso hoje</p>
-            )}
+            <div className="text-2xl font-bold">{upcomingAppointments.length}</div>
+            <p className="text-sm text-gray-600">agendamentos futuros</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Filtrar por Data</CardTitle>
+            <CardTitle className="flex items-center space-x-2">
+              <Calendar className="h-5 w-5 text-purple-600" />
+              <span>Total</span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <Input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-            />
+            <div className="text-2xl font-bold">{appointments.length}</div>
+            <p className="text-sm text-gray-600">total de agendamentos</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>
-            Compromissos - {new Date(selectedDate).toLocaleDateString('pt-BR')}
-          </CardTitle>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+            <CardTitle>Lista de Agendamentos</CardTitle>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Buscar agendamentos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 w-64"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Horário</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Título</TableHead>
+                <TableHead>Agendamento</TableHead>
                 <TableHead>Cliente</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Data e Hora</TableHead>
                 <TableHead>Responsável</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Ações</TableHead>
@@ -220,17 +229,6 @@ const AgendaModule = () => {
               {filteredAppointments.map((appointment) => (
                 <TableRow key={appointment.id}>
                   <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Clock className="h-4 w-4 text-gray-400" />
-                      <span className="font-medium">{appointment.time}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getTypeColor(appointment.type)}>
-                      {getTypeLabel(appointment.type)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
                     <div>
                       <div className="font-medium">{appointment.title}</div>
                       {appointment.description && (
@@ -238,10 +236,16 @@ const AgendaModule = () => {
                       )}
                     </div>
                   </TableCell>
+                  <TableCell>{appointment.customerName}</TableCell>
                   <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <User className="h-4 w-4 text-gray-400" />
-                      <span>{appointment.customerName}</span>
+                    <Badge variant="outline">
+                      {getTypeLabel(appointment.type)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">{new Date(appointment.date).toLocaleDateString('pt-BR')}</div>
+                      <div className="text-sm text-gray-500">{appointment.time}</div>
                     </div>
                   </TableCell>
                   <TableCell>{appointment.employeeName}</TableCell>
@@ -251,7 +255,11 @@ const AgendaModule = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleEditAppointment(appointment)}
+                    >
                       Editar
                     </Button>
                   </TableCell>
@@ -260,7 +268,7 @@ const AgendaModule = () => {
               {filteredAppointments.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
-                    <p className="text-gray-500">Nenhum compromisso agendado para esta data</p>
+                    <p className="text-gray-500">Nenhum agendamento encontrado</p>
                   </TableCell>
                 </TableRow>
               )}
@@ -268,6 +276,22 @@ const AgendaModule = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingAppointment ? 'Editar Agendamento' : 'Novo Agendamento'}
+            </DialogTitle>
+          </DialogHeader>
+          <AppointmentForm
+            onSubmit={handleSubmitAppointment}
+            onCancel={handleCancel}
+            initialData={editingAppointment || undefined}
+            customers={customers}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

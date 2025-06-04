@@ -1,15 +1,21 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Search, Edit, Phone, Mail } from "lucide-react";
 import { Customer, CustomerStatus, CustomerOrigin, Priority } from "@/types/crm";
+import { useToast } from "@/hooks/use-toast";
+import CustomerCRMForm from "./CustomerCRMForm";
 
 const ClientsModule = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const { toast } = useToast();
+
   const [customers, setCustomers] = useState<Customer[]>([
     {
       id: "1",
@@ -64,6 +70,51 @@ const ClientsModule = () => {
     }
   ]);
 
+  const handleNewCustomer = () => {
+    setEditingCustomer(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEditCustomer = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmitCustomer = (data: any) => {
+    if (editingCustomer) {
+      // Update existing customer
+      setCustomers(prev => prev.map(customer => 
+        customer.id === editingCustomer.id 
+          ? { ...customer, ...data, updatedAt: new Date().toISOString() }
+          : customer
+      ));
+      toast({
+        title: "Cliente atualizado",
+        description: "Os dados do cliente foram atualizados com sucesso.",
+      });
+    } else {
+      // Add new customer
+      const newCustomer: Customer = {
+        id: Date.now().toString(),
+        ...data,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      setCustomers(prev => [...prev, newCustomer]);
+      toast({
+        title: "Cliente criado",
+        description: "Novo cliente foi adicionado com sucesso.",
+      });
+    }
+    setIsDialogOpen(false);
+    setEditingCustomer(null);
+  };
+
+  const handleCancel = () => {
+    setIsDialogOpen(false);
+    setEditingCustomer(null);
+  };
+
   const getStatusColor = (status: CustomerStatus) => {
     switch (status) {
       case CustomerStatus.HOT_LEAD:
@@ -115,7 +166,7 @@ const ClientsModule = () => {
           <h2 className="text-2xl font-bold">Gestão de Clientes</h2>
           <p className="text-gray-600">Gerencie seus clientes e leads</p>
         </div>
-        <Button className="flex items-center space-x-2">
+        <Button onClick={handleNewCustomer} className="flex items-center space-x-2">
           <Plus className="h-4 w-4" />
           <span>Novo Cliente</span>
         </Button>
@@ -183,7 +234,11 @@ const ClientsModule = () => {
                   <TableCell>{customer.assignedEmployee}</TableCell>
                   <TableCell>{customer.nextFollowUp}</TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleEditCustomer(customer)}
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -193,6 +248,21 @@ const ClientsModule = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingCustomer ? 'Editar Cliente' : 'Novo Cliente'}
+            </DialogTitle>
+          </DialogHeader>
+          <CustomerCRMForm
+            onSubmit={handleSubmitCustomer}
+            onCancel={handleCancel}
+            initialData={editingCustomer || undefined}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

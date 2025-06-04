@@ -1,16 +1,22 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Search, Calendar, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import { Task, TaskType, TaskStatus, Priority } from "@/types/crm";
+import { useToast } from "@/hooks/use-toast";
+import TaskForm from "./TaskForm";
 
 const TasksModule = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const { toast } = useToast();
+
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: "1",
@@ -70,6 +76,70 @@ const TasksModule = () => {
       completedAt: "2024-01-17"
     }
   ]);
+
+  // Mock customers data for the form
+  const customers = [
+    { id: "1", name: "João Silva" },
+    { id: "2", name: "Ana Costa" }
+  ];
+
+  const handleNewTask = () => {
+    setEditingTask(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmitTask = (data: any) => {
+    if (editingTask) {
+      // Update existing task
+      setTasks(prev => prev.map(task => 
+        task.id === editingTask.id 
+          ? { ...task, ...data, updatedAt: new Date().toISOString() }
+          : task
+      ));
+      toast({
+        title: "Tarefa atualizada",
+        description: "A tarefa foi atualizada com sucesso.",
+      });
+    } else {
+      // Add new task
+      const newTask: Task = {
+        id: Date.now().toString(),
+        ...data,
+        employeeId: "1",
+        employeeName: "Usuário Atual",
+        createdAt: new Date().toISOString(),
+      };
+      setTasks(prev => [...prev, newTask]);
+      toast({
+        title: "Tarefa criada",
+        description: "Nova tarefa foi adicionada com sucesso.",
+      });
+    }
+    setIsDialogOpen(false);
+    setEditingTask(null);
+  };
+
+  const handleCompleteTask = (taskId: string) => {
+    setTasks(prev => prev.map(task =>
+      task.id === taskId
+        ? { ...task, status: TaskStatus.COMPLETED, completedAt: new Date().toISOString() }
+        : task
+    ));
+    toast({
+      title: "Tarefa concluída",
+      description: "A tarefa foi marcada como concluída.",
+    });
+  };
+
+  const handleCancel = () => {
+    setIsDialogOpen(false);
+    setEditingTask(null);
+  };
 
   const getTypeColor = (type: TaskType) => {
     switch (type) {
@@ -189,7 +259,7 @@ const TasksModule = () => {
           <h2 className="text-2xl font-bold">Gestão de Tarefas</h2>
           <p className="text-gray-600">Organize e acompanhe suas tarefas diárias</p>
         </div>
-        <Button className="flex items-center space-x-2">
+        <Button onClick={handleNewTask} className="flex items-center space-x-2">
           <Plus className="h-4 w-4" />
           <span>Nova Tarefa</span>
         </Button>
@@ -336,11 +406,16 @@ const TasksModule = () => {
                           variant="outline" 
                           size="sm"
                           className="text-green-600 hover:text-green-700"
+                          onClick={() => handleCompleteTask(task.id)}
                         >
                           Concluir
                         </Button>
                       )}
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleEditTask(task)}
+                      >
                         Editar
                       </Button>
                     </div>
@@ -358,6 +433,22 @@ const TasksModule = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingTask ? 'Editar Tarefa' : 'Nova Tarefa'}
+            </DialogTitle>
+          </DialogHeader>
+          <TaskForm
+            onSubmit={handleSubmitTask}
+            onCancel={handleCancel}
+            initialData={editingTask || undefined}
+            customers={customers}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
