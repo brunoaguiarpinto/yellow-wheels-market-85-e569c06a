@@ -1,51 +1,42 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import VehicleCard from "@/components/VehicleCard";
-
 const Index = () => {
   // Dados dos veículos em destaque
-  const featuredVehicles = [
-    {
-      id: 1,
-      brand: "Toyota",
-      model: "Corolla",
-      year: 2022,
-      price: 89000,
-      image: "/placeholder.svg",
-      mileage: 15000,
-      fuel: "Flex"
-    },
-    {
-      id: 2,
-      brand: "Honda",
-      model: "Civic",
-      year: 2021,
-      price: 95000,
-      image: "/placeholder.svg",
-      mileage: 22000,
-      fuel: "Flex"
-    },
-    {
-      id: 3,
-      brand: "BMW",
-      model: "320i",
-      year: 2022,
-      price: 180000,
-      image: "/placeholder.svg",
-      mileage: 12000,
-      fuel: "Gasolina"
-    }
-  ];
-
+  const featuredVehicles = [{
+    id: 1,
+    brand: "Toyota",
+    model: "Corolla",
+    year: 2022,
+    price: 89000,
+    image: "/placeholder.svg",
+    mileage: 15000,
+    fuel: "Flex"
+  }, {
+    id: 2,
+    brand: "Honda",
+    model: "Civic",
+    year: 2021,
+    price: 95000,
+    image: "/placeholder.svg",
+    mileage: 22000,
+    fuel: "Flex"
+  }, {
+    id: 3,
+    brand: "BMW",
+    model: "320i",
+    year: 2022,
+    price: 180000,
+    image: "/placeholder.svg",
+    mileage: 12000,
+    fuel: "Gasolina"
+  }];
   const handleViewDetails = (vehicle: any) => {
     // Redirecionar para a página de veículos com o veículo selecionado
     window.location.href = '/vehicles';
   };
-
-  return (
-    <div className="min-h-screen bg-white">
+  return <div className="min-h-screen bg-white">
       <Navbar />
       
       {/* Hero Section */}
@@ -67,7 +58,7 @@ const Index = () => {
               </Button>
             </Link>
             <Link to="/about">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black font-opensans font-bold px-8 py-4 text-lg">
+              <Button size="lg" variant="outline" className="border-white hover:bg-white font-opensans font-bold px-8 py-4 text-lg text-zinc-950">
                 Sobre Nós
               </Button>
             </Link>
@@ -88,13 +79,7 @@ const Index = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {featuredVehicles.map(vehicle => (
-              <VehicleCard 
-                key={vehicle.id} 
-                vehicle={vehicle} 
-                onViewDetails={handleViewDetails}
-              />
-            ))}
+            {featuredVehicles.map(vehicle => <VehicleCard key={vehicle.id} vehicle={vehicle} onViewDetails={handleViewDetails} />)}
           </div>
 
           <div className="text-center">
@@ -169,8 +154,6 @@ const Index = () => {
           </Link>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
