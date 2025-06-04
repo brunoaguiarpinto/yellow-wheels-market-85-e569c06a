@@ -4,12 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/use-toast";
 import VehiclePurchaseForm from "@/components/financial/VehiclePurchaseForm";
 import VehicleStatusManager from "@/components/financial/VehicleStatusManager";
-import { DollarSign, ShoppingCart, TrendingUp, AlertCircle, Lock } from "lucide-react";
+import { DollarSign, ShoppingCart, TrendingUp, AlertCircle, Lock, Plus, Car } from "lucide-react";
 
 const Financial = () => {
   const { user, isAuthenticated } = useAuth();
@@ -18,14 +19,17 @@ const Financial = () => {
     canCreatePurchases, 
     canViewAnalysis, 
     canManageInventory,
+    canViewSales,
+    canCreateSales,
     hasPermission 
   } = usePermissions();
   const { toast } = useToast();
   
   const [vehicles, setVehicles] = useState(() => JSON.parse(localStorage.getItem('vehicles') || '[]'));
   const [purchases] = useState(() => JSON.parse(localStorage.getItem('vehiclePurchases') || '[]'));
-  const [sales] = useState(() => JSON.parse(localStorage.getItem('sales') || '[]'));
+  const [sales, setSales] = useState(() => JSON.parse(localStorage.getItem('sales') || '[]'));
   const [showPurchaseForm, setShowPurchaseForm] = useState(false);
+  const [showSaleForm, setShowSaleForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Verificação de autenticação e permissões
@@ -66,6 +70,10 @@ const Financial = () => {
     setVehicles(JSON.parse(localStorage.getItem('vehicles') || '[]'));
   };
 
+  const refreshSales = () => {
+    setSales(JSON.parse(localStorage.getItem('sales') || '[]'));
+  };
+
   // Cálculos financeiros básicos
   const totalPurchaseValue = purchases.reduce((sum: number, purchase: any) => sum + purchase.purchasePrice, 0);
   const totalSalesValue = sales.reduce((sum: number, sale: any) => sum + parseFloat(sale.salePrice || 0), 0);
@@ -96,6 +104,49 @@ const Financial = () => {
       return;
     }
     setShowPurchaseForm(true);
+  };
+
+  const handleNewSale = () => {
+    if (!canCreateSales) {
+      toast({
+        title: "Acesso Negado",
+        description: "Você não tem permissão para registrar vendas.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowSaleForm(true);
+  };
+
+  const handleSaleSubmit = (saleData: any) => {
+    console.log("Dados da venda:", saleData);
+    
+    // Salvar venda no localStorage
+    const newSale = {
+      id: Date.now().toString(),
+      ...saleData,
+      saleDate: new Date().toISOString(),
+      soldBy: user?.name || 'Admin'
+    };
+    
+    const updatedSales = [...sales, newSale];
+    setSales(updatedSales);
+    localStorage.setItem('sales', JSON.stringify(updatedSales));
+    
+    // Atualizar status do veículo para vendido
+    const updatedVehicles = vehicles.map((vehicle: any) => 
+      vehicle.id === saleData.vehicleId 
+        ? { ...vehicle, status: 'vendido' }
+        : vehicle
+    );
+    setVehicles(updatedVehicles);
+    localStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
+    
+    setShowSaleForm(false);
+    toast({
+      title: "Venda registrada com sucesso!",
+      description: `Veículo vendido por R$ ${parseFloat(saleData.salePrice).toLocaleString()}`,
+    });
   };
 
   return (
@@ -168,8 +219,12 @@ const Financial = () => {
 
       {/* Tabs principais */}
       <Tabs defaultValue="purchases" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="purchases">Compras</TabsTrigger>
+          <TabsTrigger value="sales" disabled={!canViewSales}>
+            Vendas
+            {!canViewSales && <Lock className="h-3 w-3 ml-1" />}
+          </TabsTrigger>
           <TabsTrigger value="inventory" disabled={!canManageInventory}>
             Estoque
             {!canManageInventory && <Lock className="h-3 w-3 ml-1" />}
@@ -250,6 +305,115 @@ const Financial = () => {
               />
             </DialogContent>
           </Dialog>
+        </TabsContent>
+
+        <TabsContent value="sales" className="space-y-6">
+          {canViewSales ? (
+            <>
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-semibold font-montserrat">Vendas de Veículos</h3>
+                <Button 
+                  onClick={handleNewSale}
+                  className="bg-green-600 text-white hover:bg-green-700"
+                  disabled={!canCreateSales}
+                >
+                  {!canCreateSales && <Lock className="h-4 w-4 mr-2" />}
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Venda
+                </Button>
+              </div>
+
+              <Card>
+                <CardContent className="p-0">
+                  {sales.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Car className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">Nenhuma venda registrada ainda.</p>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Veículo</TableHead>
+                          <TableHead>Cliente</TableHead>
+                          <TableHead>Valor da Venda</TableHead>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Vendedor</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sales.map((sale: any) => {
+                          const vehicle = vehicles.find((v: any) => v.id === sale.vehicleId);
+                          return (
+                            <TableRow key={sale.id}>
+                              <TableCell>
+                                <div>
+                                  <p className="font-semibold">
+                                    {vehicle?.brand} {vehicle?.model}
+                                  </p>
+                                  <p className="text-sm text-gray-600">{vehicle?.year}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium">{sale.customerName}</p>
+                                  <p className="text-sm text-gray-600">{sale.customerEmail}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <p className="font-bold text-green-600">
+                                  R$ {parseFloat(sale.salePrice).toLocaleString()}
+                                </p>
+                              </TableCell>
+                              <TableCell>
+                                {new Date(sale.saleDate).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell>{sale.soldBy}</TableCell>
+                              <TableCell>
+                                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
+                                  Concluída
+                                </span>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Dialog de Nova Venda */}
+              <Dialog open={showSaleForm} onOpenChange={setShowSaleForm}>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Registrar Nova Venda</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600">
+                      Formulário de venda será implementado aqui
+                    </p>
+                    <div className="flex justify-end space-x-2">
+                      <Button variant="outline" onClick={() => setShowSaleForm(false)}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={() => setShowSaleForm(false)}>
+                        Salvar Venda
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-32">
+              <div className="text-center">
+                <Lock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-500">Acesso restrito ao módulo de vendas</p>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="inventory">
