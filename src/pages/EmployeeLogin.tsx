@@ -49,7 +49,7 @@ const EmployeeLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-primary flex items-center justify-center px-4">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4">
       <Card className="w-full max-w-md animate-fade-in">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">

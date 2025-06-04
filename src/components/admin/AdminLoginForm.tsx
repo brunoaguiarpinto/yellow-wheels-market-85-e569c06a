@@ -20,7 +20,7 @@ const AdminLoginForm = ({ onLogin, isLoading }: AdminLoginFormProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-primary flex items-center justify-center px-4">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4">
       <Card className="w-full max-w-md animate-fade-in">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-montserrat font-bold">
