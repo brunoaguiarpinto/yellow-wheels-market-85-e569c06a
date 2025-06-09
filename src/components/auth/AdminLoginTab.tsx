@@ -22,40 +22,44 @@ const AdminLoginTab = ({ onSubmit, isLoading }: AdminLoginTabProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
       <div>
-        <Label htmlFor="admin-username" className="font-opensans">Usuário</Label>
+        <Label htmlFor="admin-username" className="font-opensans text-sm sm:text-base mb-2 block">
+          Usuário
+        </Label>
         <div className="relative">
-          <Shield className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             id="admin-username"
             type="text"
             value={credentials.username}
             onChange={(e) => setCredentials({...credentials, username: e.target.value})}
             placeholder="Digite: admin"
-            className="font-opensans pl-10"
+            className="font-opensans pl-10 h-12 text-base touch-manipulation"
             required
           />
         </div>
       </div>
       <div>
-        <Label htmlFor="admin-password" className="font-opensans">Senha</Label>
+        <Label htmlFor="admin-password" className="font-opensans text-sm sm:text-base mb-2 block">
+          Senha
+        </Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             id="admin-password"
             type="password"
             value={credentials.password}
             onChange={(e) => setCredentials({...credentials, password: e.target.value})}
             placeholder="Digite: admin"
-            className="font-opensans pl-10"
+            className="font-opensans pl-10 h-12 text-base touch-manipulation"
             required
           />
         </div>
       </div>
       <Button 
         type="submit" 
-        className="w-full bg-accent text-black hover:bg-accent/90 font-opensans font-semibold"
+        className="w-full bg-accent text-black hover:bg-accent/90 font-opensans font-semibold h-12 text-base touch-manipulation"
         disabled={isLoading}
       >
         {isLoading ? "Entrando..." : "Entrar como Administrador"}
