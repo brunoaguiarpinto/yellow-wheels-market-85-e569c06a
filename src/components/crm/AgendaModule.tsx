@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -144,143 +143,152 @@ const AgendaModule = () => {
   const upcomingAppointments = appointments.filter(apt => new Date(apt.date) > new Date());
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
         <div>
-          <h2 className="text-2xl font-bold">Agenda</h2>
-          <p className="text-gray-600">Gerencie seus agendamentos e compromissos</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Agenda</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Gerencie seus agendamentos e compromissos</p>
         </div>
-        <Button onClick={handleNewAppointment} className="flex items-center space-x-2">
+        <Button onClick={handleNewAppointment} className="flex items-center justify-center space-x-2 w-full sm:w-auto">
           <Plus className="h-4 w-4" />
           <span>Novo Agendamento</span>
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-blue-600" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
               <span>Hoje</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todayAppointments.length}</div>
-            <p className="text-sm text-gray-600">agendamentos hoje</p>
+            <div className="text-xl sm:text-2xl font-bold">{todayAppointments.length}</div>
+            <p className="text-xs sm:text-sm text-gray-600">agendamentos hoje</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-green-600" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               <span>Próximos</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{upcomingAppointments.length}</div>
-            <p className="text-sm text-gray-600">agendamentos futuros</p>
+            <div className="text-xl sm:text-2xl font-bold">{upcomingAppointments.length}</div>
+            <p className="text-xs sm:text-sm text-gray-600">agendamentos futuros</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-purple-600" />
+        <Card className="sm:col-span-2 lg:col-span-1">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
               <span>Total</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{appointments.length}</div>
-            <p className="text-sm text-gray-600">total de agendamentos</p>
+            <div className="text-xl sm:text-2xl font-bold">{appointments.length}</div>
+            <p className="text-xs sm:text-sm text-gray-600">total de agendamentos</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-            <CardTitle>Lista de Agendamentos</CardTitle>
+        <CardHeader className="pb-4">
+          <div className="flex flex-col space-y-4">
+            <CardTitle className="text-lg sm:text-xl">Lista de Agendamentos</CardTitle>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Buscar agendamentos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-64"
+                className="pl-10 h-10 sm:h-auto"
               />
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Agendamento</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Data e Hora</TableHead>
-                <TableHead>Responsável</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredAppointments.map((appointment) => (
-                <TableRow key={appointment.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{appointment.title}</div>
-                      {appointment.description && (
-                        <div className="text-sm text-gray-500">{appointment.description}</div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>{appointment.customerName}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {getTypeLabel(appointment.type)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{new Date(appointment.date).toLocaleDateString('pt-BR')}</div>
-                      <div className="text-sm text-gray-500">{appointment.time}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{appointment.employeeName}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(appointment.status)}>
-                      {getStatusLabel(appointment.status)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => handleEditAppointment(appointment)}
-                    >
-                      Editar
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredAppointments.length === 0 && (
+        <CardContent className="p-0 sm:p-6">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    <p className="text-gray-500">Nenhum agendamento encontrado</p>
-                  </TableCell>
+                  <TableHead className="min-w-[180px]">Agendamento</TableHead>
+                  <TableHead className="min-w-[120px] hidden sm:table-cell">Cliente</TableHead>
+                  <TableHead className="min-w-[100px]">Tipo</TableHead>
+                  <TableHead className="min-w-[120px] hidden md:table-cell">Data e Hora</TableHead>
+                  <TableHead className="min-w-[120px] hidden lg:table-cell">Responsável</TableHead>
+                  <TableHead className="min-w-[100px]">Status</TableHead>
+                  <TableHead className="min-w-[80px]">Ações</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredAppointments.map((appointment) => (
+                  <TableRow key={appointment.id}>
+                    <TableCell className="p-2 sm:p-4">
+                      <div>
+                        <div className="font-medium text-sm sm:text-base">{appointment.title}</div>
+                        {appointment.description && (
+                          <div className="text-xs sm:text-sm text-gray-500 mt-1">{appointment.description}</div>
+                        )}
+                        <div className="sm:hidden mt-2 text-xs text-gray-500">
+                          Cliente: {appointment.customerName}
+                        </div>
+                        <div className="md:hidden mt-1 text-xs text-gray-500">
+                          {new Date(appointment.date).toLocaleDateString('pt-BR')} às {appointment.time}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="p-2 sm:p-4 hidden sm:table-cell text-sm">{appointment.customerName}</TableCell>
+                    <TableCell className="p-2 sm:p-4">
+                      <Badge variant="outline" className="text-xs">
+                        {getTypeLabel(appointment.type)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="p-2 sm:p-4 hidden md:table-cell">
+                      <div>
+                        <div className="font-medium text-sm">{new Date(appointment.date).toLocaleDateString('pt-BR')}</div>
+                        <div className="text-xs text-gray-500">{appointment.time}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="p-2 sm:p-4 hidden lg:table-cell text-sm">{appointment.employeeName}</TableCell>
+                    <TableCell className="p-2 sm:p-4">
+                      <Badge className={`${getStatusColor(appointment.status)} text-xs`}>
+                        {getStatusLabel(appointment.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="p-2 sm:p-4">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleEditAppointment(appointment)}
+                        className="h-8 px-2 text-xs sm:text-sm"
+                      >
+                        Editar
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredAppointments.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <p className="text-gray-500 text-sm">Nenhum agendamento encontrado</p>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto mx-2 sm:mx-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">
               {editingAppointment ? 'Editar Agendamento' : 'Novo Agendamento'}
             </DialogTitle>
           </DialogHeader>

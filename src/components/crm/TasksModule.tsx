@@ -253,92 +253,92 @@ const TasksModule = () => {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
         <div>
-          <h2 className="text-2xl font-bold">Gestão de Tarefas</h2>
-          <p className="text-gray-600">Organize e acompanhe suas tarefas diárias</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Gestão de Tarefas</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Organize e acompanhe suas tarefas diárias</p>
         </div>
-        <Button onClick={handleNewTask} className="flex items-center space-x-2">
+        <Button onClick={handleNewTask} className="flex items-center justify-center space-x-2 w-full sm:w-auto">
           <Plus className="h-4 w-4" />
           <span>Nova Tarefa</span>
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-yellow-600" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2 text-sm sm:text-base">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
               <span>Pendentes</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingTasks.length}</div>
-            <p className="text-sm text-gray-600">tarefas pendentes</p>
+            <div className="text-xl sm:text-2xl font-bold">{pendingTasks.length}</div>
+            <p className="text-xs sm:text-sm text-gray-600">tarefas pendentes</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-blue-600" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2 text-sm sm:text-base">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
               <span>Hoje</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todayTasks.length}</div>
-            <p className="text-sm text-gray-600">tarefas para hoje</p>
+            <div className="text-xl sm:text-2xl font-bold">{todayTasks.length}</div>
+            <p className="text-xs sm:text-sm text-gray-600">tarefas para hoje</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <AlertCircle className="h-5 w-5 text-red-600" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2 text-sm sm:text-base">
+              <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
               <span>Atrasadas</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{overdueTasks.length}</div>
-            <p className="text-sm text-gray-600">tarefas atrasadas</p>
+            <div className="text-xl sm:text-2xl font-bold text-red-600">{overdueTasks.length}</div>
+            <p className="text-xs sm:text-sm text-gray-600">tarefas atrasadas</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2 text-sm sm:text-base">
+              <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               <span>Concluídas</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">
               {tasks.filter(t => t.status === TaskStatus.COMPLETED).length}
             </div>
-            <p className="text-sm text-gray-600">tarefas concluídas</p>
+            <p className="text-xs sm:text-sm text-gray-600">tarefas concluídas</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-            <CardTitle>Lista de Tarefas</CardTitle>
-            <div className="flex space-x-4">
-              <div className="relative">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col space-y-4">
+            <CardTitle className="text-lg sm:text-xl">Lista de Tarefas</CardTitle>
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Buscar tarefas..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
+                  className="pl-10 h-10 sm:h-auto"
                 />
               </div>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as TaskStatus | "all")}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm h-10 sm:h-auto"
               >
                 <option value="all">Todos os Status</option>
                 <option value={TaskStatus.PENDING}>Pendente</option>
@@ -349,95 +349,110 @@ const TasksModule = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Tarefa</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Prioridade</TableHead>
-                <TableHead>Prazo</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Responsável</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTasks.map((task) => (
-                <TableRow key={task.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{task.title}</div>
-                      {task.description && (
-                        <div className="text-sm text-gray-500">{task.description}</div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getTypeColor(task.type)}>
-                      {getTypeLabel(task.type)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getPriorityColor(task.priority)}>
-                      {getPriorityLabel(task.priority)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{new Date(task.dueDate).toLocaleDateString('pt-BR')}</div>
-                      {task.dueTime && (
-                        <div className="text-sm text-gray-500">{task.dueTime}</div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>{task.customerName || "-"}</TableCell>
-                  <TableCell>{task.employeeName}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(task.status)}>
-                      {getStatusLabel(task.status)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      {task.status !== TaskStatus.COMPLETED && (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="text-green-600 hover:text-green-700"
-                          onClick={() => handleCompleteTask(task.id)}
-                        >
-                          Concluir
-                        </Button>
-                      )}
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleEditTask(task)}
-                      >
-                        Editar
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredTasks.length === 0 && (
+        <CardContent className="p-0 sm:p-6">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
-                    <p className="text-gray-500">Nenhuma tarefa encontrada</p>
-                  </TableCell>
+                  <TableHead className="min-w-[180px]">Tarefa</TableHead>
+                  <TableHead className="min-w-[100px] hidden sm:table-cell">Tipo</TableHead>
+                  <TableHead className="min-w-[100px]">Prioridade</TableHead>
+                  <TableHead className="min-w-[120px] hidden md:table-cell">Prazo</TableHead>
+                  <TableHead className="min-w-[120px] hidden lg:table-cell">Cliente</TableHead>
+                  <TableHead className="min-w-[120px] hidden lg:table-cell">Responsável</TableHead>
+                  <TableHead className="min-w-[100px]">Status</TableHead>
+                  <TableHead className="min-w-[120px]">Ações</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredTasks.map((task) => (
+                  <TableRow key={task.id}>
+                    <TableCell className="p-2 sm:p-4">
+                      <div>
+                        <div className="font-medium text-sm sm:text-base">{task.title}</div>
+                        {task.description && (
+                          <div className="text-xs sm:text-sm text-gray-500 mt-1">{task.description}</div>
+                        )}
+                        <div className="sm:hidden mt-2 space-y-1">
+                          <Badge className={`${getTypeColor(task.type)} text-xs mr-2`}>
+                            {getTypeLabel(task.type)}
+                          </Badge>
+                          {task.customerName && (
+                            <div className="text-xs text-gray-500">Cliente: {task.customerName}</div>
+                          )}
+                          <div className="text-xs text-gray-500">
+                            {new Date(task.dueDate).toLocaleDateString('pt-BR')}
+                            {task.dueTime && ` às ${task.dueTime}`}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="p-2 sm:p-4 hidden sm:table-cell">
+                      <Badge className={`${getTypeColor(task.type)} text-xs`}>
+                        {getTypeLabel(task.type)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="p-2 sm:p-4">
+                      <Badge className={`${getPriorityColor(task.priority)} text-xs`}>
+                        {getPriorityLabel(task.priority)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="p-2 sm:p-4 hidden md:table-cell">
+                      <div>
+                        <div className="font-medium text-sm">{new Date(task.dueDate).toLocaleDateString('pt-BR')}</div>
+                        {task.dueTime && (
+                          <div className="text-xs text-gray-500">{task.dueTime}</div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="p-2 sm:p-4 hidden lg:table-cell text-sm">{task.customerName || "-"}</TableCell>
+                    <TableCell className="p-2 sm:p-4 hidden lg:table-cell text-sm">{task.employeeName}</TableCell>
+                    <TableCell className="p-2 sm:p-4">
+                      <Badge className={`${getStatusColor(task.status)} text-xs`}>
+                        {getStatusLabel(task.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="p-2 sm:p-4">
+                      <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
+                        {task.status !== TaskStatus.COMPLETED && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="text-green-600 hover:text-green-700 text-xs h-7 px-2"
+                            onClick={() => handleCompleteTask(task.id)}
+                          >
+                            Concluir
+                          </Button>
+                        )}
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleEditTask(task)}
+                          className="text-xs h-7 px-2"
+                        >
+                          Editar
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredTasks.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      <p className="text-gray-500 text-sm">Nenhuma tarefa encontrada</p>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto mx-2 sm:mx-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">
               {editingTask ? 'Editar Tarefa' : 'Nova Tarefa'}
             </DialogTitle>
           </DialogHeader>
