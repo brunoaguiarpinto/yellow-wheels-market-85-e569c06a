@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -20,7 +19,9 @@ import {
   Users, 
   User, 
   DollarSign,
-  UserCheck
+  UserCheck,
+  FileText,
+  BarChart3
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -55,6 +56,16 @@ const AdminSidebar = ({ activeTab, onTabChange, children }: AdminSidebarProps) =
       title: "Financeiro",
       icon: DollarSign,
       key: "financial"
+    },
+    {
+      title: "Contratos",
+      icon: FileText,
+      key: "contracts"
+    },
+    {
+      title: "Relatórios",
+      icon: BarChart3,
+      key: "reports"
     }
   ];
 

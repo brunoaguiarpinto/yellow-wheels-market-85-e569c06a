@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +9,8 @@ import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import CustomerManagement from "@/components/admin/CustomerManagement";
 import Financial from "./Financial";
 import CRM from "./CRM";
+import ContractsModule from "@/components/contracts/ContractsModule";
+import ReportsModule from "@/components/reports/ReportsModule";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Vehicle {
@@ -242,6 +243,12 @@ const Admin = () => {
 
       case "financial":
         return <Financial />;
+
+      case "contracts":
+        return <ContractsModule />;
+
+      case "reports":
+        return <ReportsModule />;
 
       default:
         return null;
