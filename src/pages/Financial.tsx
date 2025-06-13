@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import VehiclePurchaseForm from "@/components/financial/VehiclePurchaseForm";
 import VehicleStatusManager from "@/components/financial/VehicleStatusManager";
 import SalesForm from "@/components/financial/SalesForm";
+import VehicleCostManager from "@/components/financial/VehicleCostManager";
+import FixedCostsManager from "@/components/financial/FixedCostsManager";
 import { DollarSign, ShoppingCart, TrendingUp, AlertCircle, Lock, Plus, Car } from "lucide-react";
 
 const Financial = () => {

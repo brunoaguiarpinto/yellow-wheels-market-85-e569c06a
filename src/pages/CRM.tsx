@@ -4,76 +4,96 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
-import DailyTasksPanel from "@/components/crm/DailyTasksPanel";
+import { Lock, Users, Calendar, CheckSquare, Wrench, MessageSquare } from "lucide-react";
 import ClientsModule from "@/components/crm/ClientsModule";
 import AgendaModule from "@/components/crm/AgendaModule";
 import TasksModule from "@/components/crm/TasksModule";
-import { Users, Calendar, CheckSquare, BarChart3 } from "lucide-react";
+import PostSalesManager from "@/components/crm/PostSalesManager";
+import NegotiationHistory from "@/components/crm/NegotiationHistory";
 
 const CRM = () => {
-  const { user } = useAuth();
-  const { canViewClients } = usePermissions();
+  const { user, isAuthenticated } = useAuth();
+  const { canViewCRM } = usePermissions();
 
-  if (!canViewClients) {
+  if (!isAuthenticated || !user) {
     return (
-      <div className="container mx-auto px-4 py-6">
-        <Card>
-          <CardContent className="p-4 sm:p-8 text-center">
-            <h2 className="text-xl sm:text-2xl font-bold mb-4">Acesso Negado</h2>
-            <p className="text-gray-600 text-sm sm:text-base">
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center space-y-4">
+          <Lock className="h-12 w-12 text-gray-400 mx-auto" />
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Acesso Restrito</h3>
+            <p className="text-gray-600">Você precisa estar logado para acessar esta área.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!canViewCRM) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center space-y-4">
+          <Lock className="h-12 w-12 text-gray-400 mx-auto" />
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Acesso Negado</h3>
+            <p className="text-gray-600">
               Você não tem permissão para acessar o módulo CRM.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
-      <div className="mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-montserrat font-bold leading-tight">
-          CRM - Customer Relationship Management
-        </h1>
-        <p className="text-gray-600 font-opensans text-sm sm:text-base mt-1 sm:mt-2">
-          Gerencie seus clientes, compromissos e tarefas de forma eficiente
-        </p>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold">CRM - Gestão de Relacionamento</h2>
+        <p className="text-gray-600">Gestão completa de clientes e relacionamento comercial</p>
       </div>
 
-      <Tabs defaultValue="dashboard" className="space-y-4 sm:space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto sm:h-10 p-1">
-          <TabsTrigger value="dashboard" className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-2 py-2 sm:py-1.5 px-2 sm:px-3 text-xs sm:text-sm">
-            <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="leading-none">Dashboard</span>
+      <Tabs defaultValue="clients" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="clients" className="flex items-center space-x-2">
+            <Users className="h-4 w-4" />
+            <span>Clientes</span>
           </TabsTrigger>
-          <TabsTrigger value="clients" className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-2 py-2 sm:py-1.5 px-2 sm:px-3 text-xs sm:text-sm">
-            <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="leading-none">Clientes</span>
+          <TabsTrigger value="agenda" className="flex items-center space-x-2">
+            <Calendar className="h-4 w-4" />
+            <span>Agenda</span>
           </TabsTrigger>
-          <TabsTrigger value="agenda" className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-2 py-2 sm:py-1.5 px-2 sm:px-3 text-xs sm:text-sm">
-            <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="leading-none">Agenda</span>
+          <TabsTrigger value="tasks" className="flex items-center space-x-2">
+            <CheckSquare className="h-4 w-4" />
+            <span>Tarefas</span>
           </TabsTrigger>
-          <TabsTrigger value="tasks" className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-2 py-2 sm:py-1.5 px-2 sm:px-3 text-xs sm:text-sm">
-            <CheckSquare className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="leading-none">Tarefas</span>
+          <TabsTrigger value="post-sales" className="flex items-center space-x-2">
+            <Wrench className="h-4 w-4" />
+            <span>Pós-Venda</span>
+          </TabsTrigger>
+          <TabsTrigger value="negotiations" className="flex items-center space-x-2">
+            <MessageSquare className="h-4 w-4" />
+            <span>Negociações</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dashboard" className="mt-4 sm:mt-6">
-          <DailyTasksPanel />
-        </TabsContent>
-
-        <TabsContent value="clients" className="mt-4 sm:mt-6">
+        <TabsContent value="clients">
           <ClientsModule />
         </TabsContent>
 
-        <TabsContent value="agenda" className="mt-4 sm:mt-6">
+        <TabsContent value="agenda">
           <AgendaModule />
         </TabsContent>
 
-        <TabsContent value="tasks" className="mt-4 sm:mt-6">
+        <TabsContent value="tasks">
           <TasksModule />
+        </TabsContent>
+
+        <TabsContent value="post-sales">
+          <PostSalesManager />
+        </TabsContent>
+
+        <TabsContent value="negotiations">
+          <NegotiationHistory />
         </TabsContent>
       </Tabs>
     </div>

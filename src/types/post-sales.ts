@@ -4,46 +4,52 @@ export interface PostSaleIssue {
   vehicleId: string;
   customerId: string;
   customerName: string;
-  vehicleName: string;
-  issueType: IssueType;
+  vehicleInfo: string;
+  issueType: string;
   description: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  priority: IssuePriority;
   status: IssueStatus;
-  reportedDate: string;
+  reportDate: string;
   resolvedDate?: string;
   resolution?: string;
-  cost?: number;
-  assignedTo?: string;
-  createdBy: string;
+  estimatedCost?: number;
+  actualCost?: number;
+  assignedTo: string;
   createdAt: string;
-  updatedAt: string;
-}
-
-export enum IssueType {
-  MECHANICAL = 'mechanical',
-  ELECTRICAL = 'electrical',
-  DOCUMENTATION = 'documentation',
-  COSMETIC = 'cosmetic',
-  OTHER = 'other'
 }
 
 export enum IssueStatus {
-  REPORTED = 'reported',
+  OPEN = 'open',
   IN_PROGRESS = 'in_progress',
   RESOLVED = 'resolved',
   CLOSED = 'closed'
 }
 
-export interface NegotiationHistory {
+export enum IssuePriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  URGENT = 'urgent'
+}
+
+export interface WarrantyInfo {
   id: string;
-  customerId: string;
   vehicleId: string;
-  originalPrice: number;
-  requestedDiscount: number;
-  approvedDiscount: number;
-  finalPrice: number;
-  negotiationNotes: string;
-  employeeId: string;
-  date: string;
-  status: 'ongoing' | 'accepted' | 'rejected';
+  type: 'factory' | 'extended' | 'dealer';
+  startDate: string;
+  endDate: string;
+  coverage: string;
+  isActive: boolean;
+}
+
+export interface ServiceRecord {
+  id: string;
+  vehicleId: string;
+  customerId: string;
+  serviceType: string;
+  description: string;
+  cost: number;
+  serviceDate: string;
+  performedBy: string;
+  warranty: boolean;
 }
