@@ -51,6 +51,11 @@ export const usePermissions = () => {
     canViewAnalysis: hasPermission('financial.analysis'),
     canExportReports: hasPermission('financial.export'),
     canManageInventory: hasPermission('financial.inventory'),
+    // CRM
+    canViewCRM: hasPermission('crm.view'),
+    canCreateCRMEntries: hasPermission('crm.create'),
+    canEditCRMEntries: hasPermission('crm.edit'),
+    canDeleteCRMEntries: hasPermission('crm.delete'),
     // Funcionários
     canCreateEmployees: hasPermission('employees.create'),
     canEditEmployees: hasPermission('employees.edit'),
