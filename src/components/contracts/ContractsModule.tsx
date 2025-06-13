@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Search, Eye, FileText, Download } from "lucide-react";
-import { Contract, ContractStatus } from "@/types/contracts";
+import { Contract, ContractStatus, ContractType } from "@/types/contracts";
 import { useToast } from "@/hooks/use-toast";
 import ContractGenerator from "./ContractGenerator";
 import ContractViewer from "./ContractViewer";
@@ -78,6 +78,32 @@ const ContractsModule = () => {
     }
   };
 
+  const getContractTypeLabel = (type: ContractType) => {
+    switch (type) {
+      case ContractType.WARRANTY_TERM:
+        return "Garantia";
+      case ContractType.CONSIGNMENT:
+        return "Consignação";
+      case ContractType.SALE:
+        return "Compra/Venda";
+      default:
+        return type;
+    }
+  };
+
+  const getContractTypeColor = (type: ContractType) => {
+    switch (type) {
+      case ContractType.WARRANTY_TERM:
+        return "bg-orange-100 text-orange-800";
+      case ContractType.CONSIGNMENT:
+        return "bg-blue-100 text-blue-800";
+      case ContractType.SALE:
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
   const filteredContracts = contracts.filter(contract =>
     contract.contractNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
     contract.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -89,7 +115,7 @@ const ContractsModule = () => {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
         <div>
           <h2 className="text-2xl font-bold">Contratos e Documentos</h2>
-          <p className="text-gray-600">Gerencie contratos de compra e venda</p>
+          <p className="text-gray-600">Gerencie contratos de compra e venda, consignação e termos de garantia</p>
         </div>
         <Button onClick={handleNewContract} className="flex items-center space-x-2">
           <Plus className="h-4 w-4" />
@@ -117,6 +143,7 @@ const ContractsModule = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Número</TableHead>
+                  <TableHead>Tipo</TableHead>
                   <TableHead>Cliente</TableHead>
                   <TableHead>Veículo</TableHead>
                   <TableHead>Valor</TableHead>
@@ -129,6 +156,11 @@ const ContractsModule = () => {
                 {filteredContracts.map((contract) => (
                   <TableRow key={contract.id}>
                     <TableCell className="font-medium">{contract.contractNumber}</TableCell>
+                    <TableCell>
+                      <Badge className={getContractTypeColor(contract.contractType)}>
+                        {getContractTypeLabel(contract.contractType)}
+                      </Badge>
+                    </TableCell>
                     <TableCell>{contract.customerName}</TableCell>
                     <TableCell>
                       {contract.vehicleBrand} {contract.vehicleModel} {contract.vehicleYear}
@@ -170,7 +202,7 @@ const ContractsModule = () => {
       </Card>
 
       <Dialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Gerar Novo Contrato</DialogTitle>
           </DialogHeader>
@@ -182,7 +214,7 @@ const ContractsModule = () => {
       </Dialog>
 
       <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Visualizar Contrato</DialogTitle>
           </DialogHeader>
