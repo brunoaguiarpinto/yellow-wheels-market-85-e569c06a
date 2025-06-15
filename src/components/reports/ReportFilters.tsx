@@ -19,7 +19,7 @@ const ReportFilters = ({ filters, onFiltersChange }: ReportFiltersProps) => {
   const handleFilterChange = (key: keyof ReportFilter, value: string) => {
     onFiltersChange({
       ...filters,
-      [key]: value || undefined
+      [key]: value === "all" ? undefined : value
     });
   };
 
@@ -76,14 +76,14 @@ const ReportFilters = ({ filters, onFiltersChange }: ReportFiltersProps) => {
             <div>
               <Label htmlFor="vehicleBrand">Marca</Label>
               <Select
-                value={filters.vehicleBrand || ""}
+                value={filters.vehicleBrand || "all"}
                 onValueChange={(value) => handleFilterChange("vehicleBrand", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Todas as marcas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas as marcas</SelectItem>
+                  <SelectItem value="all">Todas as marcas</SelectItem>
                   <SelectItem value="Honda">Honda</SelectItem>
                   <SelectItem value="Toyota">Toyota</SelectItem>
                   <SelectItem value="Volkswagen">Volkswagen</SelectItem>
@@ -96,14 +96,14 @@ const ReportFilters = ({ filters, onFiltersChange }: ReportFiltersProps) => {
             <div>
               <Label htmlFor="fuelType">Combustível</Label>
               <Select
-                value={filters.fuelType || ""}
+                value={filters.fuelType || "all"}
                 onValueChange={(value) => handleFilterChange("fuelType", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Todos os tipos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os tipos</SelectItem>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
                   <SelectItem value="Gasolina">Gasolina</SelectItem>
                   <SelectItem value="Álcool">Álcool</SelectItem>
                   <SelectItem value="Flex">Flex</SelectItem>
@@ -115,14 +115,14 @@ const ReportFilters = ({ filters, onFiltersChange }: ReportFiltersProps) => {
             <div>
               <Label htmlFor="transmission">Câmbio</Label>
               <Select
-                value={filters.transmission || ""}
+                value={filters.transmission || "all"}
                 onValueChange={(value) => handleFilterChange("transmission", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Todos os tipos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os tipos</SelectItem>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
                   <SelectItem value="Manual">Manual</SelectItem>
                   <SelectItem value="Automático">Automático</SelectItem>
                   <SelectItem value="CVT">CVT</SelectItem>
