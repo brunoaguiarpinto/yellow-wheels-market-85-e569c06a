@@ -6,18 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Contract, ContractStatus, ContractClause, PaymentTerms, ContractType, CONTRACT_TEMPLATES, TradeInVehicle } from "@/types/contracts";
+import { ContractType, CONTRACT_TEMPLATES } from "@/types/contracts";
+import { useSupabaseData, useSupabaseInsert } from "@/hooks/useSupabaseData";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ContractGeneratorProps {
-  onContractGenerated: (contract: Contract) => void;
+  onContractGenerated: () => void;
   onCancel: () => void;
 }
 
 const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorProps) => {
-  const [customers, setCustomers] = useState<any[]>([]);
-  const [vehicles, setVehicles] = useState<any[]>([]);
-  const [employees, setEmployees] = useState<any[]>([]);
-  
   const [contractType, setContractType] = useState<ContractType>(ContractType.SALE);
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState("");
@@ -30,31 +28,13 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
   const [warrantyIssue, setWarrantyIssue] = useState("");
   const [consignmentDays, setConsignmentDays] = useState("30");
   const [commissionRate, setCommissionRate] = useState("5");
-  const [tradeInVehicle, setTradeInVehicle] = useState<TradeInVehicle | null>(null);
   
-  const [paymentTerms, setPaymentTerms] = useState<PaymentTerms>({
-    paymentMethod: 'cash'
-  });
+  const [clauses, setClauses] = useState<any[]>([]);
 
-  const [clauses, setClauses] = useState<ContractClause[]>([]);
-
-  useEffect(() => {
-    // Carregar dados do localStorage
-    const savedCustomers = localStorage.getItem('customers');
-    if (savedCustomers) {
-      setCustomers(JSON.parse(savedCustomers));
-    }
-
-    const savedVehicles = localStorage.getItem('vehicles');
-    if (savedVehicles) {
-      setVehicles(JSON.parse(savedVehicles).filter((v: any) => v.status === 'available'));
-    }
-
-    const savedEmployees = localStorage.getItem('employees');
-    if (savedEmployees) {
-      setEmployees(JSON.parse(savedEmployees));
-    }
-  }, []);
+  const { data: customers } = useSupabaseData('customers');
+  const { data: vehicles } = useSupabaseData('vehicles', '*', { status: 'available' });
+  const { data: employees } = useSupabaseData('employees', '*', { is_active: true });
+  const { insert: insertContract, loading: insertingContract } = useSupabaseInsert('contracts');
 
   useEffect(() => {
     // Atualizar cláusulas quando o tipo de contrato mudar
@@ -75,8 +55,8 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
 
     return content
       .replace(/\[NOME_CLIENTE\]/g, customer.name)
-      .replace(/\[CPF_CLIENTE\]/g, customer.document || customer.cpf || '')
-      .replace(/\[ENDERECO_CLIENTE\]/g, `${customer.street || ''} ${customer.number || ''}, ${customer.neighborhood || ''}, ${customer.city || ''} - ${customer.state || ''}, CEP ${customer.zipCode || ''}`)
+      .replace(/\[CPF_CLIENTE\]/g, customer.document || '')
+      .replace(/\[ENDERECO_CLIENTE\]/g, `${customer.street || ''} ${customer.number || ''}, ${customer.neighborhood || ''}, ${customer.city || ''} - ${customer.state || ''}, CEP ${customer.zip_code || ''}`)
       .replace(/\[TELEFONE_CLIENTE\]/g, customer.phone || '')
       .replace(/\[MARCA\]/g, vehicle.brand)
       .replace(/\[MODELO\]/g, vehicle.model)
@@ -96,7 +76,7 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
       .replace(/\[HORA_VENDA\]/g, new Date().toLocaleTimeString('pt-BR'));
   };
 
-  const generateContract = () => {
+  const generateContract = async () => {
     if (!selectedCustomer || !selectedVehicle || !selectedEmployee) {
       return;
     }
@@ -107,47 +87,46 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
 
     if (!customer || !vehicle || !employee) return;
 
-    // Substituir placeholders nas cláusulas
-    const processedClauses = clauses.map(clause => ({
-      ...clause,
-      content: replacePlaceholders(clause.content, customer, vehicle)
-    }));
+    // Gerar número do contrato
+    const contractNumber = `CONT-${contractType.toUpperCase()}-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
 
-    const contract: Contract = {
-      id: Date.now().toString(),
-      contractNumber: `CONT-${contractType.toUpperCase()}-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
-      contractType,
-      customerId: customer.id,
-      customerName: customer.name,
-      customerDocument: customer.document || customer.cpf || '',
-      customerAddress: `${customer.street || ''} ${customer.number || ''}, ${customer.neighborhood || ''}, ${customer.city || ''} - ${customer.state || ''}, CEP ${customer.zipCode || ''}`,
-      customerPhone: customer.phone || '',
-      vehicleId: vehicle.id,
-      vehicleBrand: vehicle.brand,
-      vehicleModel: vehicle.model,
-      vehicleYear: vehicle.year,
-      vehicleColor: vehicle.color,
-      vehicleFuel: vehicle.fuel,
-      vehiclePlate: vehicle.plate || '',
-      vehicleChassis: vehicle.chassis || '',
-      vehicleKm: vehicle.mileage || 0,
-      salePrice: parseFloat(salePrice || '0'),
-      employeeId: employee.id,
-      employeeName: employee.name,
-      status: ContractStatus.DRAFT,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      clauses: processedClauses,
+    // Criar contrato
+    const contractData = {
+      contract_number: contractNumber,
+      contract_type: contractType,
+      customer_id: customer.id,
+      vehicle_id: vehicle.id,
+      employee_id: employee.id,
+      sale_price: parseFloat(salePrice || '0'),
+      status: 'draft',
       observations,
-      paymentTerms,
-      warrantyAmount: warrantyAmount ? parseFloat(warrantyAmount) : undefined,
-      warrantyIssue: warrantyIssue || undefined,
-      consignmentDays: consignmentDays ? parseInt(consignmentDays) : undefined,
-      commissionRate: commissionRate ? parseFloat(commissionRate) : undefined,
-      tradeInVehicle
+      warranty_amount: warrantyAmount ? parseFloat(warrantyAmount) : null,
+      warranty_issue: warrantyIssue || null,
+      consignment_days: consignmentDays ? parseInt(consignmentDays) : null,
+      commission_rate: commissionRate ? parseFloat(commissionRate) : null,
     };
 
-    onContractGenerated(contract);
+    const contract = await insertContract(contractData);
+    
+    if (contract) {
+      // Inserir cláusulas
+      const processedClauses = clauses.map(clause => ({
+        ...clause,
+        content: replacePlaceholders(clause.content, customer, vehicle)
+      }));
+
+      for (const clause of processedClauses) {
+        await supabase.from('contract_clauses').insert({
+          contract_id: contract.id,
+          title: clause.title,
+          content: clause.content,
+          order_number: clause.order,
+          is_editable: clause.isEditable
+        });
+      }
+
+      onContractGenerated();
+    }
   };
 
   const getContractTypeLabel = (type: ContractType) => {
@@ -290,25 +269,6 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
             </div>
           </>
         )}
-
-        {contractType === ContractType.SALE && (
-          <div>
-            <Label htmlFor="paymentMethod">Forma de Pagamento</Label>
-            <Select
-              value={paymentTerms.paymentMethod}
-              onValueChange={(value: any) => setPaymentTerms(prev => ({ ...prev, paymentMethod: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="cash">À Vista</SelectItem>
-                <SelectItem value="financing">Financiamento</SelectItem>
-                <SelectItem value="mixed">Misto</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
       </div>
 
       <Card>
@@ -345,8 +305,11 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
         <Button variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button onClick={generateContract}>
-          Gerar Contrato
+        <Button 
+          onClick={generateContract} 
+          disabled={insertingContract || !selectedCustomer || !selectedVehicle || !selectedEmployee}
+        >
+          {insertingContract ? "Gerando..." : "Gerar Contrato"}
         </Button>
       </div>
     </div>

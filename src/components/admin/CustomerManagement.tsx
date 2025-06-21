@@ -5,45 +5,48 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Edit, Trash } from "lucide-react";
-import CustomerForm from "@/components/CustomerForm";
+import { useSupabaseData, useSupabaseDelete } from "@/hooks/useSupabaseData";
+import SupabaseCustomerForm from "@/components/forms/SupabaseCustomerForm";
 
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  interest: string;
-}
-
-interface CustomerManagementProps {
-  customers: Customer[];
-  onCustomerSubmit: (data: any) => void;
-  onCustomerEdit: (customer: Customer) => void;
-  onCustomerDelete: (customerId: string) => void;
-}
-
-const CustomerManagement = ({ 
-  customers, 
-  onCustomerSubmit, 
-  onCustomerEdit, 
-  onCustomerDelete 
-}: CustomerManagementProps) => {
+const CustomerManagement = () => {
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [customerEditDialogOpen, setCustomerEditDialogOpen] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
 
-  const handleCustomerEdit = (customer: Customer) => {
+  const { data: customers, loading, refetch } = useSupabaseData('customers');
+  const { deleteRecord, loading: deleting } = useSupabaseDelete('customers');
+
+  const handleCustomerEdit = (customer: any) => {
     setEditingCustomer(customer);
     setCustomerEditDialogOpen(true);
-    onCustomerEdit(customer);
   };
 
-  const handleCustomerSubmit = (data: any) => {
-    onCustomerSubmit(data);
+  const handleCustomerSubmit = () => {
     setCustomerDialogOpen(false);
     setCustomerEditDialogOpen(false);
     setEditingCustomer(null);
+    refetch();
   };
+
+  const handleCustomerDelete = async (customerId: string) => {
+    if (window.confirm('Tem certeza que deseja excluir este cliente?')) {
+      const success = await deleteRecord(customerId);
+      if (success) {
+        refetch();
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Carregando clientes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -60,7 +63,7 @@ const CustomerManagement = ({
             <DialogHeader>
               <DialogTitle className="font-montserrat">Adicionar Novo Cliente</DialogTitle>
             </DialogHeader>
-            <CustomerForm 
+            <SupabaseCustomerForm 
               onSubmit={handleCustomerSubmit}
               onCancel={() => setCustomerDialogOpen(false)}
             />
@@ -76,7 +79,8 @@ const CustomerManagement = ({
                 <TableHead className="font-opensans">Nome</TableHead>
                 <TableHead className="font-opensans">Email</TableHead>
                 <TableHead className="font-opensans">Telefone</TableHead>
-                <TableHead className="font-opensans">Interesse</TableHead>
+                <TableHead className="font-opensans">Documento</TableHead>
+                <TableHead className="font-opensans">Cidade</TableHead>
                 <TableHead className="font-opensans">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -84,9 +88,10 @@ const CustomerManagement = ({
               {customers.map((customer) => (
                 <TableRow key={customer.id}>
                   <TableCell className="font-opensans">{customer.name}</TableCell>
-                  <TableCell className="font-opensans">{customer.email}</TableCell>
-                  <TableCell className="font-opensans">{customer.phone}</TableCell>
-                  <TableCell className="font-opensans">{customer.interest}</TableCell>
+                  <TableCell className="font-opensans">{customer.email || 'N/A'}</TableCell>
+                  <TableCell className="font-opensans">{customer.phone || 'N/A'}</TableCell>
+                  <TableCell className="font-opensans">{customer.document || 'N/A'}</TableCell>
+                  <TableCell className="font-opensans">{customer.city || 'N/A'}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
                       <Button 
@@ -99,7 +104,8 @@ const CustomerManagement = ({
                       <Button 
                         size="sm" 
                         variant="destructive"
-                        onClick={() => onCustomerDelete(customer.id)}
+                        onClick={() => handleCustomerDelete(customer.id)}
+                        disabled={deleting}
                       >
                         <Trash className="h-4 w-4" />
                       </Button>
@@ -109,7 +115,7 @@ const CustomerManagement = ({
               ))}
               {customers.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
+                  <TableCell colSpan={6} className="text-center py-8">
                     <p className="font-opensans text-gray-500">
                       Nenhum cliente cadastrado ainda.
                     </p>
@@ -126,7 +132,8 @@ const CustomerManagement = ({
           <DialogHeader>
             <DialogTitle className="font-montserrat">Editar Cliente</DialogTitle>
           </DialogHeader>
-          <CustomerForm 
+          <SupabaseCustomerForm 
+            initialData={editingCustomer}
             onSubmit={handleCustomerSubmit}
             onCancel={() => {
               setCustomerEditDialogOpen(false);

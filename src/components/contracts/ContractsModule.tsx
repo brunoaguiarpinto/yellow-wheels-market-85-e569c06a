@@ -6,41 +6,39 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Search, Eye, FileText, Download } from "lucide-react";
-import { Contract, ContractStatus, ContractType } from "@/types/contracts";
+import { Plus, Search, Eye, Download } from "lucide-react";
+import { ContractStatus, ContractType } from "@/types/contracts";
 import { useToast } from "@/hooks/use-toast";
+import { useSupabaseData } from "@/hooks/useSupabaseData";
 import ContractGenerator from "./ContractGenerator";
 import ContractViewer from "./ContractViewer";
 
 const ContractsModule = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [contracts, setContracts] = useState<Contract[]>([]);
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  const [selectedContract, setSelectedContract] = useState<any | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const savedContracts = localStorage.getItem('contracts');
-    if (savedContracts) {
-      setContracts(JSON.parse(savedContracts));
-    }
-  }, []);
+  const { data: contracts, loading, refetch } = useSupabaseData('contracts', `
+    *,
+    customers(name, document),
+    vehicles(brand, model, year),
+    employees(name)
+  `);
 
   const handleNewContract = () => {
     setIsGeneratorOpen(true);
   };
 
-  const handleViewContract = (contract: Contract) => {
+  const handleViewContract = (contract: any) => {
     setSelectedContract(contract);
     setIsViewerOpen(true);
   };
 
-  const handleContractGenerated = (contract: Contract) => {
-    const updatedContracts = [...contracts, contract];
-    setContracts(updatedContracts);
-    localStorage.setItem('contracts', JSON.stringify(updatedContracts));
+  const handleContractGenerated = () => {
     setIsGeneratorOpen(false);
+    refetch();
     
     toast({
       title: "Contrato gerado",
@@ -48,56 +46,56 @@ const ContractsModule = () => {
     });
   };
 
-  const getStatusColor = (status: ContractStatus) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case ContractStatus.DRAFT:
+      case 'draft':
         return "bg-gray-100 text-gray-800";
-      case ContractStatus.PENDING_SIGNATURE:
+      case 'pending_signature':
         return "bg-yellow-100 text-yellow-800";
-      case ContractStatus.SIGNED:
+      case 'signed':
         return "bg-green-100 text-green-800";
-      case ContractStatus.CANCELLED:
+      case 'cancelled':
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
 
-  const getStatusLabel = (status: ContractStatus) => {
+  const getStatusLabel = (status: string) => {
     switch (status) {
-      case ContractStatus.DRAFT:
+      case 'draft':
         return "Rascunho";
-      case ContractStatus.PENDING_SIGNATURE:
+      case 'pending_signature':
         return "Aguardando Assinatura";
-      case ContractStatus.SIGNED:
+      case 'signed':
         return "Assinado";
-      case ContractStatus.CANCELLED:
+      case 'cancelled':
         return "Cancelado";
       default:
         return status;
     }
   };
 
-  const getContractTypeLabel = (type: ContractType) => {
+  const getContractTypeLabel = (type: string) => {
     switch (type) {
-      case ContractType.WARRANTY_TERM:
+      case 'warranty_term':
         return "Garantia";
-      case ContractType.CONSIGNMENT:
+      case 'consignment':
         return "Consignação";
-      case ContractType.SALE:
+      case 'sale':
         return "Compra/Venda";
       default:
         return type;
     }
   };
 
-  const getContractTypeColor = (type: ContractType) => {
+  const getContractTypeColor = (type: string) => {
     switch (type) {
-      case ContractType.WARRANTY_TERM:
+      case 'warranty_term':
         return "bg-orange-100 text-orange-800";
-      case ContractType.CONSIGNMENT:
+      case 'consignment':
         return "bg-blue-100 text-blue-800";
-      case ContractType.SALE:
+      case 'sale':
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -105,10 +103,21 @@ const ContractsModule = () => {
   };
 
   const filteredContracts = contracts.filter(contract =>
-    contract.contractNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contract.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contract.vehicleBrand.toLowerCase().includes(searchTerm.toLowerCase())
+    contract.contract_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contract.customers?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contract.vehicles?.brand.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Carregando contratos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -155,21 +164,21 @@ const ContractsModule = () => {
               <TableBody>
                 {filteredContracts.map((contract) => (
                   <TableRow key={contract.id}>
-                    <TableCell className="font-medium">{contract.contractNumber}</TableCell>
+                    <TableCell className="font-medium">{contract.contract_number}</TableCell>
                     <TableCell>
-                      <Badge className={getContractTypeColor(contract.contractType)}>
-                        {getContractTypeLabel(contract.contractType)}
+                      <Badge className={getContractTypeColor(contract.contract_type)}>
+                        {getContractTypeLabel(contract.contract_type)}
                       </Badge>
                     </TableCell>
-                    <TableCell>{contract.customerName}</TableCell>
+                    <TableCell>{contract.customers?.name || 'N/A'}</TableCell>
                     <TableCell>
-                      {contract.vehicleBrand} {contract.vehicleModel} {contract.vehicleYear}
+                      {contract.vehicles ? `${contract.vehicles.brand} ${contract.vehicles.model} ${contract.vehicles.year}` : 'N/A'}
                     </TableCell>
                     <TableCell>
                       {new Intl.NumberFormat('pt-BR', {
                         style: 'currency',
                         currency: 'BRL'
-                      }).format(contract.salePrice)}
+                      }).format(contract.sale_price)}
                     </TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(contract.status)}>
@@ -177,7 +186,7 @@ const ContractsModule = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {new Date(contract.createdAt).toLocaleDateString('pt-BR')}
+                      {new Date(contract.created_at).toLocaleDateString('pt-BR')}
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
@@ -195,6 +204,15 @@ const ContractsModule = () => {
                     </TableCell>
                   </TableRow>
                 ))}
+                {filteredContracts.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      <p className="text-gray-500">
+                        {searchTerm ? 'Nenhum contrato encontrado com os critérios de busca.' : 'Nenhum contrato cadastrado ainda.'}
+                      </p>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>
