@@ -20,12 +20,9 @@ const SupabaseEmployeeManagement = () => {
   const { update: updateEmployee } = useSupabaseUpdate('employees');
   const { deleteRecord: deleteEmployee } = useSupabaseDelete('employees');
 
-  const handleEmployeeSubmit = async (data: any) => {
-    const result = await insertEmployee(data);
-    if (result) {
-      setEmployeeDialogOpen(false);
-      refetch();
-    }
+  const handleEmployeeSubmit = () => {
+    setEmployeeDialogOpen(false);
+    refetch();
   };
 
   const handleEmployeeEdit = (employee: any) => {
@@ -33,15 +30,10 @@ const SupabaseEmployeeManagement = () => {
     setEmployeeEditDialogOpen(true);
   };
 
-  const handleEmployeeUpdate = async (data: any) => {
-    if (editingEmployee) {
-      const result = await updateEmployee(editingEmployee.id, data);
-      if (result) {
-        setEmployeeEditDialogOpen(false);
-        setEditingEmployee(null);
-        refetch();
-      }
-    }
+  const handleEmployeeUpdate = () => {
+    setEmployeeEditDialogOpen(false);
+    setEditingEmployee(null);
+    refetch();
   };
 
   const handleEmployeeDelete = async (employeeId: string) => {
