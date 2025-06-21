@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Edit, Trash, Eye, EyeOff } from "lucide-react";
 import { useSupabaseData, useSupabaseInsert, useSupabaseUpdate, useSupabaseDelete } from "@/hooks/useSupabaseData";
 import { useToast } from "@/hooks/use-toast";
-import { SupabaseEmployeeForm } from "@/components/forms/SupabaseEmployeeForm";
+import SupabaseEmployeeForm from "@/components/forms/SupabaseEmployeeForm";
 
 const SupabaseEmployeeManagement = () => {
   const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
