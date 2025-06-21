@@ -5,8 +5,8 @@ import { useAuth } from "@/contexts/SupabaseAuthContext";
 import { User } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import VehicleManagement from "@/components/admin/VehicleManagement";
-import EmployeeManagement from "@/components/admin/EmployeeManagement";
+import SupabaseVehicleManagement from "@/components/admin/SupabaseVehicleManagement";
+import SupabaseEmployeeManagement from "@/components/admin/SupabaseEmployeeManagement";
 import CustomerManagement from "@/components/admin/CustomerManagement";
 import AdvancedCRM from "@/components/crm/AdvancedCRM";
 import AdvancedFinancial from "@/components/financial/AdvancedFinancial";
@@ -20,11 +20,11 @@ const SupabaseDashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "vehicles":
-        return <VehicleManagement />;
+        return <SupabaseVehicleManagement />;
       case "employees":
         return (
           <ProtectedRoute requireAdmin={true}>
-            <EmployeeManagement />
+            <SupabaseEmployeeManagement />
           </ProtectedRoute>
         );
       case "customers":
