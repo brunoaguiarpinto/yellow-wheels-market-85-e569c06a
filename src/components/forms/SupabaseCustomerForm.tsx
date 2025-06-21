@@ -5,15 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSupabaseInsert, useSupabaseUpdate } from "@/hooks/useSupabaseData";
+import type { Customer, CustomerInsert, CustomerUpdate } from "@/types/database";
 
 interface SupabaseCustomerFormProps {
-  initialData?: any;
+  initialData?: Customer;
   onSubmit: () => void;
   onCancel: () => void;
 }
 
 const SupabaseCustomerForm = ({ initialData, onSubmit, onCancel }: SupabaseCustomerFormProps) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CustomerInsert>({
     name: "",
     email: "",
     phone: "",
@@ -51,7 +52,7 @@ const SupabaseCustomerForm = ({ initialData, onSubmit, onCancel }: SupabaseCusto
     }
   }, [initialData]);
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: keyof CustomerInsert, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -67,8 +68,9 @@ const SupabaseCustomerForm = ({ initialData, onSubmit, onCancel }: SupabaseCusto
 
     let success = false;
     
-    if (isEditing) {
-      const result = await update(initialData.id, formData);
+    if (isEditing && initialData) {
+      const updateData: CustomerUpdate = { ...formData };
+      const result = await update(initialData.id, updateData);
       success = !!result;
     } else {
       const result = await insert(formData);

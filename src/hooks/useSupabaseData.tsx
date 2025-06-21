@@ -2,13 +2,16 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { Database } from '@/integrations/supabase/types';
 
-export function useSupabaseData<T>(
-  table: string,
+type Tables = Database['public']['Tables'];
+
+export function useSupabaseData<T extends keyof Tables>(
+  table: T,
   select?: string,
   filters?: Record<string, any>
 ) {
-  const [data, setData] = useState<T[]>([]);
+  const [data, setData] = useState<Tables[T]['Row'][]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -52,11 +55,11 @@ export function useSupabaseData<T>(
   return { data, loading, error, refetch: fetchData };
 }
 
-export function useSupabaseInsert<T>(table: string) {
+export function useSupabaseInsert<T extends keyof Tables>(table: T) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const insert = async (data: Partial<T>): Promise<T | null> => {
+  const insert = async (data: Tables[T]['Insert']): Promise<Tables[T]['Row'] | null> => {
     try {
       setLoading(true);
       const { data: result, error } = await supabase
@@ -89,11 +92,11 @@ export function useSupabaseInsert<T>(table: string) {
   return { insert, loading };
 }
 
-export function useSupabaseUpdate<T>(table: string) {
+export function useSupabaseUpdate<T extends keyof Tables>(table: T) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const update = async (id: string, data: Partial<T>): Promise<T | null> => {
+  const update = async (id: string, data: Tables[T]['Update']): Promise<Tables[T]['Row'] | null> => {
     try {
       setLoading(true);
       const { data: result, error } = await supabase
@@ -127,7 +130,7 @@ export function useSupabaseUpdate<T>(table: string) {
   return { update, loading };
 }
 
-export function useSupabaseDelete(table: string) {
+export function useSupabaseDelete(table: keyof Tables) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 

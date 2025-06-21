@@ -7,16 +7,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Edit, Trash } from "lucide-react";
 import { useSupabaseData, useSupabaseDelete } from "@/hooks/useSupabaseData";
 import SupabaseCustomerForm from "@/components/forms/SupabaseCustomerForm";
+import type { Customer } from "@/types/database";
 
 const CustomerManagement = () => {
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [customerEditDialogOpen, setCustomerEditDialogOpen] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
 
   const { data: customers, loading, refetch } = useSupabaseData('customers');
   const { deleteRecord, loading: deleting } = useSupabaseDelete('customers');
 
-  const handleCustomerEdit = (customer: any) => {
+  const handleCustomerEdit = (customer: Customer) => {
     setEditingCustomer(customer);
     setCustomerEditDialogOpen(true);
   };

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContractType, CONTRACT_TEMPLATES } from "@/types/contracts";
 import { useSupabaseData, useSupabaseInsert } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
+import type { Customer, Vehicle, Employee } from "@/types/database";
 
 interface ContractGeneratorProps {
   onContractGenerated: () => void;
@@ -50,9 +50,7 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
     ));
   };
 
-  const replacePlaceholders = (content: string, customer: any, vehicle: any) => {
-    if (!customer || !vehicle) return content;
-
+  const replacePlaceholders = (content: string, customer: Customer, vehicle: Vehicle) => {
     return content
       .replace(/\[NOME_CLIENTE\]/g, customer.name)
       .replace(/\[CPF_CLIENTE\]/g, customer.document || '')
@@ -81,9 +79,9 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
       return;
     }
 
-    const customer = customers.find(c => c.id === selectedCustomer);
-    const vehicle = vehicles.find(v => v.id === selectedVehicle);
-    const employee = employees.find(e => e.id === selectedEmployee);
+    const customer = customers.find((c: Customer) => c.id === selectedCustomer);
+    const vehicle = vehicles.find((v: Vehicle) => v.id === selectedVehicle);
+    const employee = employees.find((e: Employee) => e.id === selectedEmployee);
 
     if (!customer || !vehicle || !employee) return;
 
@@ -98,7 +96,7 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
       vehicle_id: vehicle.id,
       employee_id: employee.id,
       sale_price: parseFloat(salePrice || '0'),
-      status: 'draft',
+      status: 'draft' as const,
       observations,
       warranty_amount: warrantyAmount ? parseFloat(warrantyAmount) : null,
       warranty_issue: warrantyIssue || null,
@@ -166,7 +164,7 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
               <SelectValue placeholder="Selecionar cliente" />
             </SelectTrigger>
             <SelectContent>
-              {customers.map((customer) => (
+              {customers.map((customer: Customer) => (
                 <SelectItem key={customer.id} value={customer.id}>
                   {customer.name}
                 </SelectItem>
@@ -182,7 +180,7 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
               <SelectValue placeholder="Selecionar veículo" />
             </SelectTrigger>
             <SelectContent>
-              {vehicles.map((vehicle) => (
+              {vehicles.map((vehicle: Vehicle) => (
                 <SelectItem key={vehicle.id} value={vehicle.id}>
                   {vehicle.brand} {vehicle.model} {vehicle.year}
                 </SelectItem>
@@ -198,7 +196,7 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
               <SelectValue placeholder="Selecionar vendedor" />
             </SelectTrigger>
             <SelectContent>
-              {employees.map((employee) => (
+              {employees.map((employee: Employee) => (
                 <SelectItem key={employee.id} value={employee.id}>
                   {employee.name}
                 </SelectItem>

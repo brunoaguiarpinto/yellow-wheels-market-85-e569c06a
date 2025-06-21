@@ -12,12 +12,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import ContractGenerator from "./ContractGenerator";
 import ContractViewer from "./ContractViewer";
+import type { ContractWithRelations } from "@/types/database";
 
 const ContractsModule = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [selectedContract, setSelectedContract] = useState<any | null>(null);
+  const [selectedContract, setSelectedContract] = useState<ContractWithRelations | null>(null);
   const { toast } = useToast();
 
   const { data: contracts, loading, refetch } = useSupabaseData('contracts', `
@@ -31,7 +32,7 @@ const ContractsModule = () => {
     setIsGeneratorOpen(true);
   };
 
-  const handleViewContract = (contract: any) => {
+  const handleViewContract = (contract: ContractWithRelations) => {
     setSelectedContract(contract);
     setIsViewerOpen(true);
   };
@@ -102,7 +103,7 @@ const ContractsModule = () => {
     }
   };
 
-  const filteredContracts = contracts.filter(contract =>
+  const filteredContracts = contracts.filter((contract: ContractWithRelations) =>
     contract.contract_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
     contract.customers?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     contract.vehicles?.brand.toLowerCase().includes(searchTerm.toLowerCase())
@@ -162,7 +163,7 @@ const ContractsModule = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredContracts.map((contract) => (
+                {filteredContracts.map((contract: ContractWithRelations) => (
                   <TableRow key={contract.id}>
                     <TableCell className="font-medium">{contract.contract_number}</TableCell>
                     <TableCell>
@@ -181,12 +182,12 @@ const ContractsModule = () => {
                       }).format(contract.sale_price)}
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(contract.status)}>
-                        {getStatusLabel(contract.status)}
+                      <Badge className={getStatusColor(contract.status || 'draft')}>
+                        {getStatusLabel(contract.status || 'draft')}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {new Date(contract.created_at).toLocaleDateString('pt-BR')}
+                      {new Date(contract.created_at || '').toLocaleDateString('pt-BR')}
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
