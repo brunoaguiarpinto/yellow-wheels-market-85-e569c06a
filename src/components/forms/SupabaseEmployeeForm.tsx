@@ -7,22 +7,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useSupabaseInsert, useSupabaseUpdate } from "@/hooks/useSupabaseData";
+import type { Employee, EmployeeInsert, EmployeeUpdate } from "@/types/database";
 
 interface SupabaseEmployeeFormProps {
-  initialData?: any;
+  initialData?: Employee;
   onSubmit: () => void;
   onCancel: () => void;
 }
 
 const SupabaseEmployeeForm = ({ initialData, onSubmit, onCancel }: SupabaseEmployeeFormProps) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<EmployeeInsert>({
     name: "",
     email: "",
     phone: "",
     document: "",
     role: "salesperson",
-    salary: "",
-    commission_rate: "",
+    salary: null,
+    commission_rate: null,
     hire_date: "",
     address: "",
     is_active: true
@@ -42,8 +43,8 @@ const SupabaseEmployeeForm = ({ initialData, onSubmit, onCancel }: SupabaseEmplo
         phone: initialData.phone || "",
         document: initialData.document || "",
         role: initialData.role || "salesperson",
-        salary: initialData.salary || "",
-        commission_rate: initialData.commission_rate || "",
+        salary: initialData.salary || null,
+        commission_rate: initialData.commission_rate || null,
         hire_date: initialData.hire_date || "",
         address: initialData.address || "",
         is_active: initialData.is_active ?? true
@@ -51,7 +52,7 @@ const SupabaseEmployeeForm = ({ initialData, onSubmit, onCancel }: SupabaseEmplo
     }
   }, [initialData]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: keyof EmployeeInsert, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -65,19 +66,19 @@ const SupabaseEmployeeForm = ({ initialData, onSubmit, onCancel }: SupabaseEmplo
       return;
     }
 
-    const submitData = {
+    const submitData: EmployeeInsert | EmployeeUpdate = {
       ...formData,
-      salary: formData.salary ? parseFloat(formData.salary) : null,
-      commission_rate: formData.commission_rate ? parseFloat(formData.commission_rate) : null,
+      salary: formData.salary ? parseFloat(String(formData.salary)) : null,
+      commission_rate: formData.commission_rate ? parseFloat(String(formData.commission_rate)) : null,
     };
 
     let success = false;
     
-    if (isEditing) {
-      const result = await update(initialData.id, submitData);
+    if (isEditing && initialData) {
+      const result = await update(initialData.id, submitData as EmployeeUpdate);
       success = !!result;
     } else {
-      const result = await insert(submitData);
+      const result = await insert(submitData as EmployeeInsert);
       success = !!result;
     }
 
@@ -117,7 +118,7 @@ const SupabaseEmployeeForm = ({ initialData, onSubmit, onCancel }: SupabaseEmplo
               <Label htmlFor="phone">Telefone</Label>
               <Input
                 id="phone"
-                value={formData.phone}
+                value={formData.phone || ""}
                 onChange={(e) => handleChange("phone", e.target.value)}
               />
             </div>
@@ -125,7 +126,7 @@ const SupabaseEmployeeForm = ({ initialData, onSubmit, onCancel }: SupabaseEmplo
               <Label htmlFor="document">CPF</Label>
               <Input
                 id="document"
-                value={formData.document}
+                value={formData.document || ""}
                 onChange={(e) => handleChange("document", e.target.value)}
               />
             </div>
@@ -133,7 +134,7 @@ const SupabaseEmployeeForm = ({ initialData, onSubmit, onCancel }: SupabaseEmplo
               <Label htmlFor="address">Endereço</Label>
               <Input
                 id="address"
-                value={formData.address}
+                value={formData.address || ""}
                 onChange={(e) => handleChange("address", e.target.value)}
               />
             </div>
@@ -149,7 +150,7 @@ const SupabaseEmployeeForm = ({ initialData, onSubmit, onCancel }: SupabaseEmplo
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="role">Cargo</Label>
-              <Select value={formData.role} onValueChange={(value) => handleChange("role", value)}>
+              <Select value={formData.role} onValueChange={(value: "admin" | "manager" | "salesperson" | "mechanic") => handleChange("role", value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -176,8 +177,8 @@ const SupabaseEmployeeForm = ({ initialData, onSubmit, onCancel }: SupabaseEmplo
                 id="salary"
                 type="number"
                 step="0.01"
-                value={formData.salary}
-                onChange={(e) => handleChange("salary", e.target.value)}
+                value={formData.salary || ""}
+                onChange={(e) => handleChange("salary", e.target.value ? parseFloat(e.target.value) : null)}
               />
             </div>
             <div>
@@ -186,14 +187,14 @@ const SupabaseEmployeeForm = ({ initialData, onSubmit, onCancel }: SupabaseEmplo
                 id="commission_rate"
                 type="number"
                 step="0.01"
-                value={formData.commission_rate}
-                onChange={(e) => handleChange("commission_rate", e.target.value)}
+                value={formData.commission_rate || ""}
+                onChange={(e) => handleChange("commission_rate", e.target.value ? parseFloat(e.target.value) : null)}
               />
             </div>
             <div className="flex items-center space-x-2">
               <Switch
                 id="is_active"
-                checked={formData.is_active}
+                checked={formData.is_active ?? true}
                 onCheckedChange={(checked) => handleChange("is_active", checked)}
               />
               <Label htmlFor="is_active">Funcionário Ativo</Label>

@@ -7,20 +7,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSupabaseInsert, useSupabaseUpdate } from "@/hooks/useSupabaseData";
+import type { Vehicle, VehicleInsert, VehicleUpdate } from "@/types/database";
 
 interface SupabaseVehicleFormProps {
-  initialData?: any;
+  initialData?: Vehicle;
   onSubmit: () => void;
   onCancel: () => void;
 }
 
 const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicleFormProps) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<VehicleInsert>({
     brand: "",
     model: "",
-    year: "",
-    price: "",
-    mileage: "",
+    year: new Date().getFullYear(),
+    price: 0,
+    mileage: 0,
     fuel: "",
     transmission: "",
     color: "",
@@ -28,7 +29,7 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
     chassis: "",
     description: "",
     status: "available",
-    purchase_price: "",
+    purchase_price: null,
     purchase_date: "",
     supplier: "",
     condition: ""
@@ -45,9 +46,9 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
       setFormData({
         brand: initialData.brand || "",
         model: initialData.model || "",
-        year: initialData.year?.toString() || "",
-        price: initialData.price?.toString() || "",
-        mileage: initialData.mileage?.toString() || "",
+        year: initialData.year || new Date().getFullYear(),
+        price: initialData.price || 0,
+        mileage: initialData.mileage || 0,
         fuel: initialData.fuel || "",
         transmission: initialData.transmission || "",
         color: initialData.color || "",
@@ -55,7 +56,7 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
         chassis: initialData.chassis || "",
         description: initialData.description || "",
         status: initialData.status || "available",
-        purchase_price: initialData.purchase_price?.toString() || "",
+        purchase_price: initialData.purchase_price || null,
         purchase_date: initialData.purchase_date || "",
         supplier: initialData.supplier || "",
         condition: initialData.condition || ""
@@ -63,7 +64,7 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
     }
   }, [initialData]);
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: keyof VehicleInsert, value: string | number | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -77,21 +78,21 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
       return;
     }
 
-    const submitData = {
+    const submitData: VehicleInsert | VehicleUpdate = {
       ...formData,
-      year: parseInt(formData.year),
-      price: parseFloat(formData.price),
-      mileage: formData.mileage ? parseInt(formData.mileage) : 0,
-      purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
+      year: parseInt(String(formData.year)),
+      price: parseFloat(String(formData.price)),
+      mileage: formData.mileage ? parseInt(String(formData.mileage)) : 0,
+      purchase_price: formData.purchase_price ? parseFloat(String(formData.purchase_price)) : null,
     };
 
     let success = false;
     
-    if (isEditing) {
-      const result = await update(initialData.id, submitData);
+    if (isEditing && initialData) {
+      const result = await update(initialData.id, submitData as VehicleUpdate);
       success = !!result;
     } else {
-      const result = await insert(submitData);
+      const result = await insert(submitData as VehicleInsert);
       success = !!result;
     }
 
@@ -134,7 +135,7 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
                 min="1900"
                 max="2030"
                 value={formData.year}
-                onChange={(e) => handleChange("year", e.target.value)}
+                onChange={(e) => handleChange("year", parseInt(e.target.value))}
                 required
               />
             </div>
@@ -190,7 +191,7 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
               <Label htmlFor="plate">Placa</Label>
               <Input
                 id="plate"
-                value={formData.plate}
+                value={formData.plate || ""}
                 onChange={(e) => handleChange("plate", e.target.value)}
               />
             </div>
@@ -198,7 +199,7 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
               <Label htmlFor="chassis">Chassi</Label>
               <Input
                 id="chassis"
-                value={formData.chassis}
+                value={formData.chassis || ""}
                 onChange={(e) => handleChange("chassis", e.target.value)}
               />
             </div>
@@ -208,8 +209,8 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
                 id="mileage"
                 type="number"
                 min="0"
-                value={formData.mileage}
-                onChange={(e) => handleChange("mileage", e.target.value)}
+                value={formData.mileage || 0}
+                onChange={(e) => handleChange("mileage", parseInt(e.target.value) || 0)}
               />
             </div>
           </div>
@@ -217,7 +218,7 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
             <Label htmlFor="description">Descrição</Label>
             <Textarea
               id="description"
-              value={formData.description}
+              value={formData.description || ""}
               onChange={(e) => handleChange("description", e.target.value)}
               rows={3}
             />
@@ -239,17 +240,18 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
                 step="0.01"
                 min="0"
                 value={formData.price}
-                onChange={(e) => handleChange("price", e.target.value)}
+                onChange={(e) => handleChange("price", parseFloat(e.target.value))}
                 required
               />
             </div>
             <div>
               <Label htmlFor="status">Status</Label>
-              <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
+              <Select value={formData.status} onValueChange={(value: "purchased" | "available" | "reserved" | "sold" | "maintenance") => handleChange("status", value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="purchased">Comprado</SelectItem>
                   <SelectItem value="available">Disponível</SelectItem>
                   <SelectItem value="reserved">Reservado</SelectItem>
                   <SelectItem value="sold">Vendido</SelectItem>
@@ -264,8 +266,8 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.purchase_price}
-                onChange={(e) => handleChange("purchase_price", e.target.value)}
+                value={formData.purchase_price || ""}
+                onChange={(e) => handleChange("purchase_price", e.target.value ? parseFloat(e.target.value) : null)}
               />
             </div>
             <div>
@@ -273,7 +275,7 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
               <Input
                 id="purchase_date"
                 type="date"
-                value={formData.purchase_date}
+                value={formData.purchase_date || ""}
                 onChange={(e) => handleChange("purchase_date", e.target.value)}
               />
             </div>
@@ -281,13 +283,13 @@ const SupabaseVehicleForm = ({ initialData, onSubmit, onCancel }: SupabaseVehicl
               <Label htmlFor="supplier">Fornecedor</Label>
               <Input
                 id="supplier"
-                value={formData.supplier}
+                value={formData.supplier || ""}
                 onChange={(e) => handleChange("supplier", e.target.value)}
               />
             </div>
             <div>
               <Label htmlFor="condition">Condição</Label>
-              <Select value={formData.condition} onValueChange={(value) => handleChange("condition", value)}>
+              <Select value={formData.condition || ""} onValueChange={(value) => handleChange("condition", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione..." />
                 </SelectTrigger>
