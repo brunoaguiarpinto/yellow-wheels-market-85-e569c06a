@@ -77,7 +77,6 @@ const Admin = () => {
       description: "Por favor, use /dashboard para acessar o novo sistema.",
       variant: "destructive",
     });
-    return false;
   };
 
   const handleVehicleSubmit = (data: any) => {
