@@ -103,7 +103,7 @@ export function useSupabaseUpdate<T extends TableName>(table: T) {
       const { data: result, error } = await supabase
         .from(table)
         .update(data)
-        .eq('id', id)
+        .eq('id' as any, id)
         .select()
         .single();
       
@@ -141,7 +141,7 @@ export function useSupabaseDelete<T extends TableName>(table: T) {
       const { error } = await supabase
         .from(table)
         .delete()
-        .eq('id', id);
+        .eq('id' as any, id);
       
       if (error) throw error;
       

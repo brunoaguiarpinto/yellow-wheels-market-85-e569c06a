@@ -229,14 +229,7 @@ const Admin = () => {
         );
 
       case "customers":
-        return (
-          <CustomerManagement
-            customers={customers}
-            onCustomerSubmit={handleCustomerSubmit}
-            onCustomerEdit={handleCustomerEdit}
-            onCustomerDelete={deleteCustomer}
-          />
-        );
+        return <CustomerManagement />;
 
       case "crm":
         return <CRM />;
