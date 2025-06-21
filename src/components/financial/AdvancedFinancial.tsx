@@ -2,12 +2,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, TrendingDown, Plus, Calendar } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Calendar } from "lucide-react";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import SalesFinancialManager from "./SalesFinancialManager";
-import VehicleCostManager from "./VehicleCostManager";
 import FixedCostManager from "./FixedCostManager";
 import FinancialReports from "./FinancialReports";
 
@@ -134,19 +132,14 @@ const AdvancedFinancial = () => {
 
       {/* Módulos Financeiros */}
       <Tabs defaultValue="sales" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="sales">Vendas</TabsTrigger>
-          <TabsTrigger value="vehicle-costs">Custos Veículos</TabsTrigger>
           <TabsTrigger value="fixed-costs">Custos Fixos</TabsTrigger>
           <TabsTrigger value="reports">Relatórios</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sales">
           <SalesFinancialManager />
-        </TabsContent>
-
-        <TabsContent value="vehicle-costs">
-          <VehicleCostManager />
         </TabsContent>
 
         <TabsContent value="fixed-costs">

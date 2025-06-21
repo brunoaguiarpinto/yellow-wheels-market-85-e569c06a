@@ -51,7 +51,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (error) throw error;
-      setProfile(data);
+      
+      // Type guard to ensure role is valid
+      const validRoles = ['admin', 'manager', 'employee'] as const;
+      const role = validRoles.includes(data.role as any) ? data.role as 'admin' | 'manager' | 'employee' : 'employee';
+      
+      setProfile({
+        ...data,
+        role
+      });
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
