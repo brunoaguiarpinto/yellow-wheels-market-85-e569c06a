@@ -17,7 +17,7 @@ const ContractsModule = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [selectedContract, setSelectedContract] = useState<ContractWithRelations | null>(null);
+  const [selectedContract, setSelectedContract] = useState<any | null>(null);
   const { toast } = useToast();
 
   const { data: contracts, loading, refetch } = useSupabaseData('contracts', `
@@ -31,8 +31,34 @@ const ContractsModule = () => {
     setIsGeneratorOpen(true);
   };
 
-  const handleViewContract = (contract: ContractWithRelations) => {
-    setSelectedContract(contract);
+  const handleViewContract = (contract: any) => {
+    // Convert snake_case to camelCase for the viewer
+    const convertedContract = {
+      id: contract.id,
+      contractNumber: contract.contract_number,
+      contractType: contract.contract_type,
+      customerId: contract.customer_id,
+      customerName: contract.customers?.name || '',
+      customerDocument: contract.customers?.document || '',
+      vehicleId: contract.vehicle_id,
+      vehicleBrand: contract.vehicles?.brand || '',
+      vehicleModel: contract.vehicles?.model || '',
+      vehicleYear: contract.vehicles?.year || 0,
+      employeeId: contract.employee_id,
+      employeeName: contract.employees?.name || '',
+      salePrice: contract.sale_price,
+      status: contract.status,
+      warrantyAmount: contract.warranty_amount,
+      warrantyIssue: contract.warranty_issue,
+      consignmentDays: contract.consignment_days,
+      commissionRate: contract.commission_rate,
+      observations: contract.observations,
+      createdAt: contract.created_at,
+      updatedAt: contract.updated_at,
+      signedAt: contract.signed_at
+    };
+    
+    setSelectedContract(convertedContract);
     setIsViewerOpen(true);
   };
 
@@ -102,10 +128,10 @@ const ContractsModule = () => {
     }
   };
 
-  const filteredContracts = contracts.filter((contract: ContractWithRelations) =>
-    contract.contract_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contract.customers?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contract.vehicles?.brand.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredContracts = contracts.filter((contract: any) =>
+    contract.contract_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contract.customers?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contract.vehicles?.brand?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -162,7 +188,7 @@ const ContractsModule = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredContracts.map((contract: ContractWithRelations) => (
+                {filteredContracts.map((contract: any) => (
                   <TableRow key={contract.id}>
                     <TableCell className="font-medium">{contract.contract_number}</TableCell>
                     <TableCell>

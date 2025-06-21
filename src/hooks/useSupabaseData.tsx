@@ -5,13 +5,14 @@ import { useToast } from '@/hooks/use-toast';
 import type { Database } from '@/integrations/supabase/types';
 
 type Tables = Database['public']['Tables'];
+type TableName = keyof Tables;
 
-export function useSupabaseData<T extends keyof Tables>(
+export function useSupabaseData<T extends TableName>(
   table: T,
   select?: string,
   filters?: Record<string, any>
 ) {
-  const [data, setData] = useState<Tables[T]['Row'][]>([]);
+  const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -55,11 +56,11 @@ export function useSupabaseData<T extends keyof Tables>(
   return { data, loading, error, refetch: fetchData };
 }
 
-export function useSupabaseInsert<T extends keyof Tables>(table: T) {
+export function useSupabaseInsert<T extends TableName>(table: T) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const insert = async (data: Tables[T]['Insert']): Promise<Tables[T]['Row'] | null> => {
+  const insert = async (data: any): Promise<any | null> => {
     try {
       setLoading(true);
       const { data: result, error } = await supabase
@@ -92,11 +93,11 @@ export function useSupabaseInsert<T extends keyof Tables>(table: T) {
   return { insert, loading };
 }
 
-export function useSupabaseUpdate<T extends keyof Tables>(table: T) {
+export function useSupabaseUpdate<T extends TableName>(table: T) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const update = async (id: string, data: Tables[T]['Update']): Promise<Tables[T]['Row'] | null> => {
+  const update = async (id: string, data: any): Promise<any | null> => {
     try {
       setLoading(true);
       const { data: result, error } = await supabase
@@ -130,7 +131,7 @@ export function useSupabaseUpdate<T extends keyof Tables>(table: T) {
   return { update, loading };
 }
 
-export function useSupabaseDelete(table: keyof Tables) {
+export function useSupabaseDelete<T extends TableName>(table: T) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
