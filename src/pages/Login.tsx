@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 import { Building2, Shield, User } from "lucide-react";
 import AdminLoginTab from "@/components/auth/AdminLoginTab";
 import EmployeeLoginTab from "@/components/auth/EmployeeLoginTab";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { signIn } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -20,14 +20,14 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const success = await login(credentials.username, credentials.password, 'admin');
+      const success = await signIn(credentials.username, credentials.password);
       
       if (success) {
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo ao painel administrativo da Lord Veículos.",
         });
-        navigate('/admin-dashboard');
+        navigate('/dashboard');
       } else {
         toast({
           title: "Erro no login",
@@ -50,14 +50,14 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const success = await login(credentials.email, credentials.password, 'employee');
+      const success = await signIn(credentials.email, credentials.password);
       
       if (success) {
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo ao seu dashboard Lord Veículos.",
         });
-        navigate('/employee-dashboard');
+        navigate('/dashboard');
       } else {
         toast({
           title: "Erro no login",
