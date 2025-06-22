@@ -37,17 +37,30 @@ const ProtectedRoute = ({ children, requireAdmin = false, requireManager = false
     return <AuthForm />;
   }
 
-  // Give a moment for profile to load after user is authenticated
+  // Allow access if we have a user, even if profile is temporarily unavailable
+  // This prevents infinite loading when profile fetch fails
   if (user && !profile) {
-    console.log('⏳ ProtectedRoute: User exists but no profile yet, waiting...');
-    return (
-      <div className="min-h-screen bg-gradient-primary flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
-          <p className="font-opensans text-gray-600">Carregando perfil...</p>
+    console.log('⚠️ ProtectedRoute: User exists but no profile - allowing basic access');
+    
+    // For admin/manager requirements, we need the profile to check roles
+    if (requireAdmin || requireManager) {
+      console.log('🚫 ProtectedRoute: Role-based access requires profile');
+      return (
+        <div className="min-h-screen bg-white flex items-center justify-center px-4">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-orange-600 mb-4">Perfil não encontrado</h1>
+            <p className="text-gray-600 mb-4">Não foi possível carregar seu perfil de usuário.</p>
+            <p className="text-sm text-gray-500">
+              Isso pode indicar um problema de configuração. Entre em contato com o administrador.
+            </p>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+    
+    // For basic access, allow the user through even without profile
+    console.log('✅ ProtectedRoute: Basic access granted without profile');
+    return <>{children}</>;
   }
 
   if (requireAdmin && profile?.role !== 'admin') {

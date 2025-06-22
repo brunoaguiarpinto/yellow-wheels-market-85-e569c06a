@@ -18,7 +18,14 @@ const Login = () => {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (!loading && user && profile) {
+    console.log('🔄 Login useEffect check:', { 
+      loading, 
+      hasUser: !!user, 
+      hasProfile: !!profile,
+      userRole: profile?.role 
+    });
+    
+    if (!loading && user) {
       console.log('🔄 Login: User authenticated, redirecting to dashboard');
       navigate('/dashboard', { replace: true });
     }
@@ -97,6 +104,18 @@ const Login = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
           <p className="font-opensans text-gray-600">Verificando autenticação...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't show login form if user is authenticated (prevent flash)
+  if (user) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
+          <p className="font-opensans text-gray-600">Redirecionando...</p>
         </div>
       </div>
     );

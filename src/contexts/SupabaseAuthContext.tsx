@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,23 +39,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileRetryCount, setProfileRetryCount] = useState(0);
   const { toast } = useToast();
 
-  const fetchProfile = async (userId: string) => {
-    console.log('🔍 Fetching profile for user ID:', userId);
+  const fetchProfile = async (userId: string, retryCount = 0) => {
+    console.log('🔍 fetchProfile attempt:', { userId, retryCount });
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
+
+      console.log('📋 Profile query result:', { data, error, hasData: !!data });
 
       if (error) {
-        console.error('❌ Error fetching profile:', error);
+        console.error('❌ Profile fetch error:', error);
+        if (retryCount < 2) {
+          console.log('🔄 Retrying profile fetch...');
+          setTimeout(() => fetchProfile(userId, retryCount + 1), 1000);
+          return;
+        }
         throw error;
       }
       
-      console.log('✅ Profile fetched successfully:', data);
+      if (!data) {
+        console.warn('⚠️ No profile found for user:', userId);
+        console.log('🔍 This might be normal for new users or indicate RLS issues');
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+      
+      console.log('✅ Profile data received:', data);
       
       // Type guard to ensure role is valid
       const validRoles = ['admin', 'manager', 'employee'] as const;
@@ -68,20 +83,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
       
       setProfile(profileData);
-      console.log('👤 Profile state updated:', profileData);
+      setProfileRetryCount(0);
+      console.log('👤 Profile state updated successfully:', profileData);
     } catch (error) {
       console.error('💥 Error in fetchProfile:', error);
-      setProfile(null);
+      if (retryCount < 2) {
+        console.log('🔄 Retrying profile fetch due to error...');
+        setProfileRetryCount(retryCount + 1);
+        setTimeout(() => fetchProfile(userId, retryCount + 1), 1000);
+      } else {
+        console.error('🚫 Max retries reached, setting profile to null');
+        setProfile(null);
+      }
     }
   };
 
   useEffect(() => {
     console.log('🚀 Setting up auth state listener');
+    let timeoutId: NodeJS.Timeout;
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 Auth state change:', event, session?.user?.id);
+        console.log('🔄 Auth state change:', { event, userId: session?.user?.id });
+        
+        // Clear any existing timeout
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -89,13 +118,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           console.log('👍 User authenticated, fetching profile...');
           await fetchProfile(session.user.id);
+          
+          // Safety timeout - if profile doesn't load in 10 seconds, continue anyway
+          timeoutId = setTimeout(() => {
+            console.warn('⏰ Profile fetch timeout - continuing without profile');
+            if (loading) {
+              setLoading(false);
+            }
+          }, 10000);
         } else {
           console.log('👎 No user session, clearing profile');
           setProfile(null);
+          setLoading(false);
         }
-        
-        setLoading(false);
-        console.log('⏰ Loading set to false');
       }
     );
 
@@ -118,9 +153,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (session?.user) {
           await fetchProfile(session.user.id);
+          
+          // Safety timeout for initial load
+          timeoutId = setTimeout(() => {
+            console.warn('⏰ Initial profile fetch timeout - continuing anyway');
+            if (loading) {
+              setLoading(false);
+            }
+          }, 10000);
+        } else {
+          setLoading(false);
         }
         
-        setLoading(false);
         console.log('✅ Auth initialization complete');
       } catch (error) {
         console.error('💥 Error in auth initialization:', error);
@@ -132,9 +176,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       console.log('🧹 Cleaning up auth subscription');
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       subscription.unsubscribe();
     };
   }, []);
+
+  // Set loading to false when we have both user and profile, or when we have user but no profile after retries
+  useEffect(() => {
+    if (user && (profile || profileRetryCount >= 2)) {
+      console.log('🎯 Setting loading to false - auth complete', { hasUser: !!user, hasProfile: !!profile, retryCount: profileRetryCount });
+      setLoading(false);
+    } else if (!user && !loading) {
+      console.log('🎯 No user and not loading - ensure loading is false');
+      setLoading(false);
+    }
+  }, [user, profile, profileRetryCount, loading]);
 
   const signIn = async (email: string, password: string): Promise<boolean> => {
     console.log('🔑 Attempting sign in for:', email);
@@ -153,22 +211,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log('✅ Sign in successful:', data.user?.id);
       
-      toast({
-        title: "Login realizado com sucesso!",
-        description: "Bem-vindo ao sistema Lord Veículos.",
-      });
-      
       return true;
     } catch (error: any) {
       console.error('💥 Sign in failed:', error.message);
-      toast({
-        title: "Erro no login",
-        description: error.message,
-        variant: "destructive",
-      });
       return false;
     } finally {
-      setLoading(false);
+      // Don't set loading to false here - let the auth state change handle it
     }
   };
 
@@ -240,7 +288,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     userRole: profile?.role,
     isAdmin,
-    isManager
+    isManager,
+    retryCount: profileRetryCount
   });
 
   const value: AuthContextType = {
