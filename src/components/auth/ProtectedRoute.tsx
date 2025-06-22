@@ -11,7 +11,17 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, requireAdmin = false, requireManager = false }: ProtectedRouteProps) => {
   const { user, profile, loading } = useAuth();
 
+  console.log('🛡️ ProtectedRoute check:', {
+    hasUser: !!user,
+    hasProfile: !!profile,
+    loading,
+    userRole: profile?.role,
+    requireAdmin,
+    requireManager
+  });
+
   if (loading) {
+    console.log('⏳ ProtectedRoute: Still loading...');
     return (
       <div className="min-h-screen bg-gradient-primary flex items-center justify-center px-4">
         <div className="text-center">
@@ -22,11 +32,26 @@ const ProtectedRoute = ({ children, requireAdmin = false, requireManager = false
     );
   }
 
-  if (!user || !profile) {
+  if (!user) {
+    console.log('🚫 ProtectedRoute: No user, redirecting to auth');
     return <AuthForm />;
   }
 
-  if (requireAdmin && profile.role !== 'admin') {
+  // Give a moment for profile to load after user is authenticated
+  if (user && !profile) {
+    console.log('⏳ ProtectedRoute: User exists but no profile yet, waiting...');
+    return (
+      <div className="min-h-screen bg-gradient-primary flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
+          <p className="font-opensans text-gray-600">Carregando perfil...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (requireAdmin && profile?.role !== 'admin') {
+    console.log('🚫 ProtectedRoute: Admin required but user is not admin');
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="text-center">
@@ -37,7 +62,8 @@ const ProtectedRoute = ({ children, requireAdmin = false, requireManager = false
     );
   }
 
-  if (requireManager && !['admin', 'manager'].includes(profile.role)) {
+  if (requireManager && !['admin', 'manager'].includes(profile?.role || '')) {
+    console.log('🚫 ProtectedRoute: Manager required but user is not manager/admin');
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="text-center">
@@ -48,6 +74,7 @@ const ProtectedRoute = ({ children, requireAdmin = false, requireManager = false
     );
   }
 
+  console.log('✅ ProtectedRoute: Access granted');
   return <>{children}</>;
 };
 
