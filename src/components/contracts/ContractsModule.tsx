@@ -6,65 +6,41 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Search, Eye, Download } from "lucide-react";
+import { Plus, Search, Eye, FileText, Download } from "lucide-react";
+import { Contract, ContractStatus, ContractType } from "@/types/contracts";
 import { useToast } from "@/hooks/use-toast";
-import { useSupabaseData } from "@/hooks/useSupabaseData";
 import ContractGenerator from "./ContractGenerator";
 import ContractViewer from "./ContractViewer";
-import type { ContractWithRelations } from "@/types/database";
 
 const ContractsModule = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [contracts, setContracts] = useState<Contract[]>([]);
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [selectedContract, setSelectedContract] = useState<any | null>(null);
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const { toast } = useToast();
 
-  const { data: contracts, loading, refetch } = useSupabaseData('contracts', `
-    *,
-    customers(name, document),
-    vehicles(brand, model, year),
-    employees(name)
-  `);
+  useEffect(() => {
+    const savedContracts = localStorage.getItem('contracts');
+    if (savedContracts) {
+      setContracts(JSON.parse(savedContracts));
+    }
+  }, []);
 
   const handleNewContract = () => {
     setIsGeneratorOpen(true);
   };
 
-  const handleViewContract = (contract: any) => {
-    // Convert snake_case to camelCase for the viewer
-    const convertedContract = {
-      id: contract.id,
-      contractNumber: contract.contract_number,
-      contractType: contract.contract_type,
-      customerId: contract.customer_id,
-      customerName: contract.customers?.name || '',
-      customerDocument: contract.customers?.document || '',
-      vehicleId: contract.vehicle_id,
-      vehicleBrand: contract.vehicles?.brand || '',
-      vehicleModel: contract.vehicles?.model || '',
-      vehicleYear: contract.vehicles?.year || 0,
-      employeeId: contract.employee_id,
-      employeeName: contract.employees?.name || '',
-      salePrice: contract.sale_price,
-      status: contract.status,
-      warrantyAmount: contract.warranty_amount,
-      warrantyIssue: contract.warranty_issue,
-      consignmentDays: contract.consignment_days,
-      commissionRate: contract.commission_rate,
-      observations: contract.observations,
-      createdAt: contract.created_at,
-      updatedAt: contract.updated_at,
-      signedAt: contract.signed_at
-    };
-    
-    setSelectedContract(convertedContract);
+  const handleViewContract = (contract: Contract) => {
+    setSelectedContract(contract);
     setIsViewerOpen(true);
   };
 
-  const handleContractGenerated = () => {
+  const handleContractGenerated = (contract: Contract) => {
+    const updatedContracts = [...contracts, contract];
+    setContracts(updatedContracts);
+    localStorage.setItem('contracts', JSON.stringify(updatedContracts));
     setIsGeneratorOpen(false);
-    refetch();
     
     toast({
       title: "Contrato gerado",
@@ -72,78 +48,67 @@ const ContractsModule = () => {
     });
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: ContractStatus) => {
     switch (status) {
-      case 'draft':
+      case ContractStatus.DRAFT:
         return "bg-gray-100 text-gray-800";
-      case 'pending_signature':
+      case ContractStatus.PENDING_SIGNATURE:
         return "bg-yellow-100 text-yellow-800";
-      case 'signed':
+      case ContractStatus.SIGNED:
         return "bg-green-100 text-green-800";
-      case 'cancelled':
+      case ContractStatus.CANCELLED:
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status: ContractStatus) => {
     switch (status) {
-      case 'draft':
+      case ContractStatus.DRAFT:
         return "Rascunho";
-      case 'pending_signature':
+      case ContractStatus.PENDING_SIGNATURE:
         return "Aguardando Assinatura";
-      case 'signed':
+      case ContractStatus.SIGNED:
         return "Assinado";
-      case 'cancelled':
+      case ContractStatus.CANCELLED:
         return "Cancelado";
       default:
         return status;
     }
   };
 
-  const getContractTypeLabel = (type: string) => {
+  const getContractTypeLabel = (type: ContractType) => {
     switch (type) {
-      case 'warranty_term':
+      case ContractType.WARRANTY_TERM:
         return "Garantia";
-      case 'consignment':
+      case ContractType.CONSIGNMENT:
         return "Consignação";
-      case 'sale':
+      case ContractType.SALE:
         return "Compra/Venda";
       default:
         return type;
     }
   };
 
-  const getContractTypeColor = (type: string) => {
+  const getContractTypeColor = (type: ContractType) => {
     switch (type) {
-      case 'warranty_term':
+      case ContractType.WARRANTY_TERM:
         return "bg-orange-100 text-orange-800";
-      case 'consignment':
+      case ContractType.CONSIGNMENT:
         return "bg-blue-100 text-blue-800";
-      case 'sale':
+      case ContractType.SALE:
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
 
-  const filteredContracts = contracts.filter((contract: any) =>
-    contract.contract_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contract.customers?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contract.vehicles?.brand?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredContracts = contracts.filter(contract =>
+    contract.contractNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contract.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contract.vehicleBrand.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando contratos...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -188,31 +153,31 @@ const ContractsModule = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredContracts.map((contract: any) => (
+                {filteredContracts.map((contract) => (
                   <TableRow key={contract.id}>
-                    <TableCell className="font-medium">{contract.contract_number}</TableCell>
+                    <TableCell className="font-medium">{contract.contractNumber}</TableCell>
                     <TableCell>
-                      <Badge className={getContractTypeColor(contract.contract_type)}>
-                        {getContractTypeLabel(contract.contract_type)}
+                      <Badge className={getContractTypeColor(contract.contractType)}>
+                        {getContractTypeLabel(contract.contractType)}
                       </Badge>
                     </TableCell>
-                    <TableCell>{contract.customers?.name || 'N/A'}</TableCell>
+                    <TableCell>{contract.customerName}</TableCell>
                     <TableCell>
-                      {contract.vehicles ? `${contract.vehicles.brand} ${contract.vehicles.model} ${contract.vehicles.year}` : 'N/A'}
+                      {contract.vehicleBrand} {contract.vehicleModel} {contract.vehicleYear}
                     </TableCell>
                     <TableCell>
                       {new Intl.NumberFormat('pt-BR', {
                         style: 'currency',
                         currency: 'BRL'
-                      }).format(contract.sale_price)}
+                      }).format(contract.salePrice)}
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(contract.status || 'draft')}>
-                        {getStatusLabel(contract.status || 'draft')}
+                      <Badge className={getStatusColor(contract.status)}>
+                        {getStatusLabel(contract.status)}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {new Date(contract.created_at || '').toLocaleDateString('pt-BR')}
+                      {new Date(contract.createdAt).toLocaleDateString('pt-BR')}
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
@@ -230,15 +195,6 @@ const ContractsModule = () => {
                     </TableCell>
                   </TableRow>
                 ))}
-                {filteredContracts.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      <p className="text-gray-500">
-                        {searchTerm ? 'Nenhum contrato encontrado com os critérios de busca.' : 'Nenhum contrato cadastrado ainda.'}
-                      </p>
-                    </TableCell>
-                  </TableRow>
-                )}
               </TableBody>
             </Table>
           </div>

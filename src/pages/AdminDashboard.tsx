@@ -11,7 +11,7 @@ import Financial from "./Financial";
 import CRM from "./CRM";
 import ContractsModule from "@/components/contracts/ContractsModule";
 import ReportsModule from "@/components/reports/ReportsModule";
-import { useAuth } from "@/contexts/SupabaseAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Vehicle {
   id: string;
@@ -31,7 +31,7 @@ interface Customer {
 }
 
 const Admin = () => {
-  const { user, profile, loading, signOut } = useAuth();
+  const { isAuthenticated, isAdmin, user, logout, login, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("vehicles");
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -39,10 +39,6 @@ const Admin = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const { toast } = useToast();
-
-  // Check if user is authenticated and is admin
-  const isAuthenticated = !!user;
-  const isAdmin = profile?.role === 'admin';
 
   useEffect(() => {
     // Carregar dados do localStorage
@@ -71,12 +67,20 @@ const Admin = () => {
   }, []);
 
   const handleLogin = async (username: string, password: string) => {
-    // This is now handled by Supabase auth, so we can redirect to the new dashboard
-    toast({
-      title: "Use o novo sistema de login",
-      description: "Por favor, use /dashboard para acessar o novo sistema.",
-      variant: "destructive",
-    });
+    const success = await login(username, password, 'admin');
+    
+    if (success) {
+      toast({
+        title: "Login realizado com sucesso!",
+        description: "Bem-vindo ao painel administrativo da Lord Veículos.",
+      });
+    } else {
+      toast({
+        title: "Erro no login",
+        description: "Usuário ou senha incorretos.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleVehicleSubmit = (data: any) => {
@@ -225,7 +229,14 @@ const Admin = () => {
         );
 
       case "customers":
-        return <CustomerManagement />;
+        return (
+          <CustomerManagement
+            customers={customers}
+            onCustomerSubmit={handleCustomerSubmit}
+            onCustomerEdit={handleCustomerEdit}
+            onCustomerDelete={deleteCustomer}
+          />
+        );
 
       case "crm":
         return <CRM />;
@@ -245,7 +256,7 @@ const Admin = () => {
   };
 
   // Loading state
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-primary flex items-center justify-center px-4">
         <div className="text-center">
@@ -258,7 +269,7 @@ const Admin = () => {
 
   // Se não estiver autenticado ou não for admin, mostrar tela de login
   if (!isAuthenticated || !isAdmin) {
-    return <AdminLoginForm onLogin={handleLogin} isLoading={loading} />;
+    return <AdminLoginForm onLogin={handleLogin} isLoading={isLoading} />;
   }
 
   return (
@@ -269,12 +280,12 @@ const Admin = () => {
             <div className="flex items-center space-x-2">
               <User className="h-5 w-5 text-gray-600" />
               <span className="font-opensans text-gray-600">
-                {profile?.name || 'Admin'}
+                {user?.name || 'Admin'}
               </span>
             </div>
             <Button 
               variant="outline" 
-              onClick={signOut}
+              onClick={logout}
               className="font-opensans"
             >
               Sair

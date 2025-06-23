@@ -1,168 +1,137 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useSupabaseData, useSupabaseDelete } from "@/hooks/useSupabaseData";
-import SupabaseCustomerForm from "@/components/forms/SupabaseCustomerForm";
-import type { Customer } from "@/types/database";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Plus, Edit, Trash } from "lucide-react";
+import CustomerForm from "@/components/CustomerForm";
 
-const CustomerManagement = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | undefined>(undefined);
-  const { toast } = useToast();
+interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  interest: string;
+}
 
-  const { data: customers, loading, refetch } = useSupabaseData('customers');
-  const { deleteRecord, loading: deleting } = useSupabaseDelete('customers');
+interface CustomerManagementProps {
+  customers: Customer[];
+  onCustomerSubmit: (data: any) => void;
+  onCustomerEdit: (customer: Customer) => void;
+  onCustomerDelete: (customerId: string) => void;
+}
 
-  const handleAddCustomer = () => {
-    setSelectedCustomer(undefined);
-    setIsFormOpen(true);
+const CustomerManagement = ({ 
+  customers, 
+  onCustomerSubmit, 
+  onCustomerEdit, 
+  onCustomerDelete 
+}: CustomerManagementProps) => {
+  const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
+  const [customerEditDialogOpen, setCustomerEditDialogOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+
+  const handleCustomerEdit = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setCustomerEditDialogOpen(true);
+    onCustomerEdit(customer);
   };
 
-  const handleEditCustomer = (customer: any) => {
-    setSelectedCustomer(customer);
-    setIsFormOpen(true);
+  const handleCustomerSubmit = (data: any) => {
+    onCustomerSubmit(data);
+    setCustomerDialogOpen(false);
+    setCustomerEditDialogOpen(false);
+    setEditingCustomer(null);
   };
-
-  const handleDeleteCustomer = async (id: string) => {
-    if (window.confirm('Tem certeza que deseja excluir este cliente?')) {
-      const success = await deleteRecord(id);
-      if (success) {
-        refetch();
-      }
-    }
-  };
-
-  const handleFormSubmit = () => {
-    setIsFormOpen(false);
-    setSelectedCustomer(undefined);
-    refetch();
-  };
-
-  const handleFormCancel = () => {
-    setIsFormOpen(false);
-    setSelectedCustomer(undefined);
-  };
-
-  const filteredCustomers = customers.filter((customer: any) =>
-    customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.document?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando clientes...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
-        <div>
-          <h2 className="text-2xl font-bold">Gestão de Clientes</h2>
-          <p className="text-gray-600">Gerencie os clientes da sua concessionária</p>
-        </div>
-        <Button onClick={handleAddCustomer} className="flex items-center space-x-2">
-          <Plus className="h-4 w-4" />
-          <span>Novo Cliente</span>
-        </Button>
+    <div className="space-y-6 animate-slide-up">
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-montserrat font-bold">Gerenciamento de Clientes</h2>
+        <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Cliente
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="font-montserrat">Adicionar Novo Cliente</DialogTitle>
+            </DialogHeader>
+            <CustomerForm 
+              onSubmit={handleCustomerSubmit}
+              onCancel={() => setCustomerDialogOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>
-        <CardHeader>
-          <div className="flex items-center space-x-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Buscar por nome, email, telefone ou documento..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Telefone</TableHead>
-                  <TableHead>Documento</TableHead>
-                  <TableHead>Cidade</TableHead>
-                  <TableHead>Ações</TableHead>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="font-opensans">Nome</TableHead>
+                <TableHead className="font-opensans">Email</TableHead>
+                <TableHead className="font-opensans">Telefone</TableHead>
+                <TableHead className="font-opensans">Interesse</TableHead>
+                <TableHead className="font-opensans">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {customers.map((customer) => (
+                <TableRow key={customer.id}>
+                  <TableCell className="font-opensans">{customer.name}</TableCell>
+                  <TableCell className="font-opensans">{customer.email}</TableCell>
+                  <TableCell className="font-opensans">{customer.phone}</TableCell>
+                  <TableCell className="font-opensans">{customer.interest}</TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleCustomerEdit(customer)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        onClick={() => onCustomerDelete(customer.id)}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCustomers.map((customer: any) => (
-                  <TableRow key={customer.id}>
-                    <TableCell className="font-medium">{customer.name}</TableCell>
-                    <TableCell>{customer.email || '-'}</TableCell>
-                    <TableCell>{customer.phone || '-'}</TableCell>
-                    <TableCell>{customer.document || '-'}</TableCell>
-                    <TableCell>{customer.city || '-'}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditCustomer(customer)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteCustomer(customer.id)}
-                          disabled={deleting}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {filteredCustomers.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      <p className="text-gray-500">
-                        {searchTerm ? 'Nenhum cliente encontrado com os critérios de busca.' : 'Nenhum cliente cadastrado ainda.'}
-                      </p>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+              ))}
+              {customers.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    <p className="font-opensans text-gray-500">
+                      Nenhum cliente cadastrado ainda.
+                    </p>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={customerEditDialogOpen} onOpenChange={setCustomerEditDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {selectedCustomer ? "Editar Cliente" : "Novo Cliente"}
-            </DialogTitle>
+            <DialogTitle className="font-montserrat">Editar Cliente</DialogTitle>
           </DialogHeader>
-          <SupabaseCustomerForm
-            initialData={selectedCustomer}
-            onSubmit={handleFormSubmit}
-            onCancel={handleFormCancel}
+          <CustomerForm 
+            onSubmit={handleCustomerSubmit}
+            onCancel={() => {
+              setCustomerEditDialogOpen(false);
+              setEditingCustomer(null);
+            }}
           />
         </DialogContent>
       </Dialog>

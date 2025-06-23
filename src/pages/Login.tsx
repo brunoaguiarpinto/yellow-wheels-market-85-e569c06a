@@ -1,50 +1,33 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/SupabaseAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Building2, Shield, User } from "lucide-react";
 import AdminLoginTab from "@/components/auth/AdminLoginTab";
 import EmployeeLoginTab from "@/components/auth/EmployeeLoginTab";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, user, profile, loading } = useAuth();
+  const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    console.log('🔄 Login useEffect check:', { 
-      loading, 
-      hasUser: !!user, 
-      hasProfile: !!profile,
-      userRole: profile?.role 
-    });
-    
-    if (!loading && user) {
-      console.log('🔄 Login: User authenticated, redirecting to dashboard');
-      navigate('/dashboard', { replace: true });
-    }
-  }, [user, profile, loading, navigate]);
-
   const handleAdminLogin = async (credentials: { username: string; password: string }) => {
-    console.log('🔑 Admin login attempt');
     setIsLoading(true);
 
     try {
-      const success = await signIn(credentials.username, credentials.password);
+      const success = await login(credentials.username, credentials.password, 'admin');
       
       if (success) {
-        console.log('✅ Admin login successful, will redirect via useEffect');
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo ao painel administrativo da Lord Veículos.",
         });
-        // Navigation will be handled by useEffect
+        navigate('/admin-dashboard');
       } else {
         toast({
           title: "Erro no login",
@@ -53,7 +36,6 @@ const Login = () => {
         });
       }
     } catch (error) {
-      console.error('💥 Admin login error:', error);
       toast({
         title: "Erro no sistema",
         description: "Tente novamente em alguns instantes.",
@@ -65,19 +47,17 @@ const Login = () => {
   };
 
   const handleEmployeeLogin = async (credentials: { email: string; password: string }) => {
-    console.log('🔑 Employee login attempt');
     setIsLoading(true);
 
     try {
-      const success = await signIn(credentials.email, credentials.password);
+      const success = await login(credentials.email, credentials.password, 'employee');
       
       if (success) {
-        console.log('✅ Employee login successful, will redirect via useEffect');
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo ao seu dashboard Lord Veículos.",
         });
-        // Navigation will be handled by useEffect
+        navigate('/employee-dashboard');
       } else {
         toast({
           title: "Erro no login",
@@ -86,7 +66,6 @@ const Login = () => {
         });
       }
     } catch (error) {
-      console.error('💥 Employee login error:', error);
       toast({
         title: "Erro no sistema",
         description: "Tente novamente em alguns instantes.",
@@ -96,30 +75,6 @@ const Login = () => {
       setIsLoading(false);
     }
   };
-
-  // Show loading if we're checking authentication
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
-          <p className="font-opensans text-gray-600">Verificando autenticação...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Don't show login form if user is authenticated (prevent flash)
-  if (user) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
-          <p className="font-opensans text-gray-600">Redirecionando...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20">
