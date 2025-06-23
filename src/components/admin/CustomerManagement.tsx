@@ -10,6 +10,8 @@ import { Customer } from "@/types/crm";
 
 interface CustomerManagementProps {
   customers: Customer[];
+  editingCustomer: Customer | null;
+  setEditingCustomer: (customer: Customer | null) => void;
   onCustomerSubmit: (data: any) => void;
   onCustomerEdit: (customer: Customer) => void;
   onCustomerDelete: (customerId: string) => void;
@@ -17,34 +19,30 @@ interface CustomerManagementProps {
 
 const CustomerManagement = ({ 
   customers, 
+  editingCustomer,
+  setEditingCustomer,
   onCustomerSubmit, 
   onCustomerEdit, 
   onCustomerDelete 
 }: CustomerManagementProps) => {
-  const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
-  const [customerEditDialogOpen, setCustomerEditDialogOpen] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   const handleCustomerEdit = (customer: Customer) => {
-    setEditingCustomer(customer);
-    setCustomerEditDialogOpen(true);
     onCustomerEdit(customer);
   };
 
   const handleCustomerSubmit = (data: any) => {
     onCustomerSubmit(data);
-    setCustomerDialogOpen(false);
-    setCustomerEditDialogOpen(false);
-    setEditingCustomer(null);
+    setIsAddDialogOpen(false);
   };
 
   return (
     <div className="space-y-6 animate-slide-up">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-montserrat font-bold">Gerenciamento de Clientes</h2>
-        <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
+            <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold" onClick={() => setEditingCustomer(null)}>
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Cliente
             </Button>
@@ -55,7 +53,7 @@ const CustomerManagement = ({
             </DialogHeader>
             <CustomerForm 
               onSubmit={handleCustomerSubmit}
-              onCancel={() => setCustomerDialogOpen(false)}
+              onCancel={() => setIsAddDialogOpen(false)}
             />
           </DialogContent>
         </Dialog>
@@ -114,17 +112,15 @@ const CustomerManagement = ({
         </CardContent>
       </Card>
 
-      <Dialog open={customerEditDialogOpen} onOpenChange={setCustomerEditDialogOpen}>
+      <Dialog open={!!editingCustomer} onOpenChange={(isOpen) => !isOpen && setEditingCustomer(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-montserrat">Editar Cliente</DialogTitle>
           </DialogHeader>
           <CustomerForm 
+            initialData={editingCustomer}
             onSubmit={handleCustomerSubmit}
-            onCancel={() => {
-              setCustomerEditDialogOpen(false);
-              setEditingCustomer(null);
-            }}
+            onCancel={() => setEditingCustomer(null)}
           />
         </DialogContent>
       </Dialog>

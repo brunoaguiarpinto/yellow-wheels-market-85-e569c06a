@@ -202,6 +202,8 @@ const Admin = () => {
         return (
           <CustomerManagement
             customers={customers}
+            editingCustomer={editingCustomer}
+            setEditingCustomer={setEditingCustomer}
             onCustomerSubmit={handleCustomerSubmit}
             onCustomerEdit={handleCustomerEdit}
             onCustomerDelete={deleteCustomer}

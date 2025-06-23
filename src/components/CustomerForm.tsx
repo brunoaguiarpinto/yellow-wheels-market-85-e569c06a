@@ -32,12 +32,16 @@ const customerSchema = z.object({
 
 type CustomerFormData = z.infer<typeof customerSchema>;
 
+import { useEffect } from "react";
+import { Customer } from "@/types/crm";
+
 interface CustomerFormProps {
   onSubmit?: (data: CustomerFormData) => void;
   onCancel?: () => void;
+  initialData?: Customer | null;
 }
 
-const CustomerForm = ({ onSubmit, onCancel }: CustomerFormProps) => {
+const CustomerForm = ({ onSubmit, onCancel, initialData }: CustomerFormProps) => {
   const { toast } = useToast();
   
   const form = useForm<CustomerFormData>({
@@ -46,6 +50,12 @@ const CustomerForm = ({ onSubmit, onCancel }: CustomerFormProps) => {
       financingInterest: false,
     }
   });
+
+  useEffect(() => {
+    if (initialData) {
+      form.reset(initialData);
+    }
+  }, [initialData, form]);
 
   const handleSubmit = (data: CustomerFormData) => {
     onSubmit?.(data);
