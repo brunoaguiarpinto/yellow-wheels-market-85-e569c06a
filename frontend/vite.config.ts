@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    // Forçando o reinício do servidor
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
