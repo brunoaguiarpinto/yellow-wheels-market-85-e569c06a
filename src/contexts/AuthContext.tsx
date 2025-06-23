@@ -1,18 +1,18 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
 
 export interface User {
   id: string;
   name: string;
   email: string;
   role: 'admin' | 'employee';
-  employeeId?: string;
   permissions?: string[];
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, role: 'admin' | 'employee') => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -35,61 +35,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Recuperar usuário do localStorage na inicialização
     const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
+    const token = localStorage.getItem('authToken');
+    if (savedUser && token) {
       try {
         const parsedUser = JSON.parse(savedUser);
         setUser(parsedUser);
-        console.log('AuthContext - User loaded from localStorage:', parsedUser);
       } catch (error) {
         console.error('AuthContext - Error parsing saved user:', error);
         localStorage.removeItem('currentUser');
+        localStorage.removeItem('authToken');
       }
     }
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string, role: 'admin' | 'employee'): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    
     try {
-      // Simulação de autenticação - em produção seria uma API real
-      if (role === 'admin' && email === 'admin' && password === 'admin') {
-        const adminUser: User = {
-          id: 'admin-1',
-          name: 'Administrador',
-          email: 'admin@lordveiculos.com',
-          role: 'admin',
-          permissions: [] // Admin tem acesso a tudo
-        };
-        setUser(adminUser);
-        localStorage.setItem('currentUser', JSON.stringify(adminUser));
-        console.log('AuthContext - Admin login successful:', adminUser);
+      const response = await api.post('/auth/login', { email, password });
+      const { token, user: loggedInUser } = response.data;
+
+      if (token && loggedInUser) {
+        setUser(loggedInUser);
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
         setIsLoading(false);
         return true;
       }
-
-      // Verificar funcionários cadastrados
-      const employees = JSON.parse(localStorage.getItem('employees') || '[]');
-      const employee = employees.find((emp: any) => emp.email === email && emp.password === password);
-      
-      if (employee && role === 'employee') {
-        const employeeUser: User = {
-          id: employee.id,
-          name: employee.name,
-          email: employee.email,
-          role: 'employee',
-          employeeId: employee.id,
-          permissions: employee.permissions || []
-        };
-        setUser(employeeUser);
-        localStorage.setItem('currentUser', JSON.stringify(employeeUser));
-        console.log('AuthContext - Employee login successful:', employeeUser);
-        setIsLoading(false);
-        return true;
-      }
-
       setIsLoading(false);
       return false;
     } catch (error) {
@@ -102,6 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('authToken');
     console.log('AuthContext - User logged out');
   };
 

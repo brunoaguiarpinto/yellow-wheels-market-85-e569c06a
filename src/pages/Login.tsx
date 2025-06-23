@@ -16,11 +16,11 @@ const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleAdminLogin = async (credentials: { username: string; password: string }) => {
+  const handleAdminLogin = async (credentials: { email: string; password: string }) => {
     setIsLoading(true);
 
     try {
-      const success = await login(credentials.username, credentials.password, 'admin');
+      const success = await login(credentials.email, credentials.password);
       
       if (success) {
         toast({
@@ -50,7 +50,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const success = await login(credentials.email, credentials.password, 'employee');
+      const success = await login(credentials.email, credentials.password);
       
       if (success) {
         toast({

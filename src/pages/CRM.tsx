@@ -14,6 +14,7 @@ import NegotiationHistory from "@/components/crm/NegotiationHistory";
 const CRM = () => {
   const { user, isAuthenticated } = useAuth();
   const { canViewCRM } = usePermissions();
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
 
   if (!isAuthenticated || !user) {
     return (
@@ -77,7 +78,7 @@ const CRM = () => {
         </TabsList>
 
         <TabsContent value="clients">
-          <ClientsModule />
+          <ClientsModule onCustomerSelect={setSelectedCustomerId} />
         </TabsContent>
 
         <TabsContent value="agenda">
@@ -93,7 +94,13 @@ const CRM = () => {
         </TabsContent>
 
         <TabsContent value="negotiations">
-          <NegotiationHistory />
+          {selectedCustomerId ? (
+            <NegotiationHistory customerId={selectedCustomerId} />
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Selecione um cliente na aba "Clientes" para ver o histórico.</p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

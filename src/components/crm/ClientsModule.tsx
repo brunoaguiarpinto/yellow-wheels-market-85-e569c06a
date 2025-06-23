@@ -1,74 +1,60 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/services/api";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Search, Edit, Phone, Mail } from "lucide-react";
-import { Customer, CustomerStatus, CustomerOrigin, Priority } from "@/types/crm";
+import { Customer, CustomerStatus } from "@/types/crm";
 import { useToast } from "@/hooks/use-toast";
 import CustomerCRMForm from "./CustomerCRMForm";
 
-const ClientsModule = () => {
+interface ClientsModuleProps {
+  onCustomerSelect: (customerId: string) => void;
+}
+
+const ClientsModule = ({ onCustomerSelect }: ClientsModuleProps) => {
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const { toast } = useToast();
 
-  const [customers, setCustomers] = useState<Customer[]>([
-    {
-      id: "1",
-      name: "João Silva",
-      email: "joao@email.com",
-      phone: "(11) 99999-9999",
-      whatsapp: "(11) 99999-9999",
-      cpf: "123.456.789-00",
-      birthDate: "1985-03-15",
-      address: "Rua das Flores, 123",
-      number: "123",
-      neighborhood: "Centro",
-      city: "São Paulo",
-      state: "SP",
-      zipCode: "01234-567",
-      origin: CustomerOrigin.WEBSITE,
-      status: CustomerStatus.HOT_LEAD,
-      vehicleInterest: "Civic 2024",
-      priceRange: "R$ 80.000 - R$ 100.000",
-      financingInterest: true,
-      priority: Priority.HIGH,
-      assignedEmployee: "Maria Santos",
-      lastContact: "2024-01-15",
-      nextFollowUp: "2024-01-20",
-      observations: "Cliente interessado em Honda Civic. Aguardando aprovação do financiamento.",
-      createdAt: "2024-01-10",
-      updatedAt: "2024-01-15"
+  const { data: customers = [], isLoading } = useQuery<Customer[]>({
+    queryKey: ['customers'],
+    queryFn: async () => {
+      const { data } = await api.get('/customers');
+      return data;
     },
-    {
-      id: "2",
-      name: "Ana Costa",
-      email: "ana@email.com",
-      phone: "(11) 88888-8888",
-      address: "Av. Paulista, 456",
-      number: "456",
-      neighborhood: "Bela Vista",
-      city: "São Paulo",
-      state: "SP",
-      zipCode: "01310-100",
-      origin: CustomerOrigin.REFERRAL,
-      status: CustomerStatus.NEGOTIATING,
-      vehicleInterest: "Corolla 2024",
-      priceRange: "R$ 90.000 - R$ 120.000",
-      financingInterest: false,
-      priority: Priority.MEDIUM,
-      assignedEmployee: "Carlos Lima",
-      lastContact: "2024-01-14",
-      nextFollowUp: "2024-01-18",
-      observations: "Cliente com bom poder de compra. Pagamento à vista.",
-      createdAt: "2024-01-08",
-      updatedAt: "2024-01-14"
+  });
+
+  const mutation = useMutation({
+    mutationFn: (customerData: Partial<Customer>) => {
+      if (editingCustomer) {
+        return api.put(`/customers/${editingCustomer.id}`, customerData);
+      }
+      return api.post('/customers', customerData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      toast({
+        title: editingCustomer ? "Cliente atualizado" : "Cliente criado",
+        description: "Os dados foram salvos com sucesso.",
+      });
+      setIsDialogOpen(false);
+      setEditingCustomer(null);
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar os dados do cliente.",
+        variant: "destructive",
+      });
     }
-  ]);
+  });
 
   const handleNewCustomer = () => {
     setEditingCustomer(null);
@@ -81,33 +67,7 @@ const ClientsModule = () => {
   };
 
   const handleSubmitCustomer = (data: any) => {
-    if (editingCustomer) {
-      // Update existing customer
-      setCustomers(prev => prev.map(customer => 
-        customer.id === editingCustomer.id 
-          ? { ...customer, ...data, updatedAt: new Date().toISOString() }
-          : customer
-      ));
-      toast({
-        title: "Cliente atualizado",
-        description: "Os dados do cliente foram atualizados com sucesso.",
-      });
-    } else {
-      // Add new customer
-      const newCustomer: Customer = {
-        id: Date.now().toString(),
-        ...data,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setCustomers(prev => [...prev, newCustomer]);
-      toast({
-        title: "Cliente criado",
-        description: "Novo cliente foi adicionado com sucesso.",
-      });
-    }
-    setIsDialogOpen(false);
-    setEditingCustomer(null);
+    mutation.mutate(data);
   };
 
   const handleCancel = () => {
@@ -155,8 +115,8 @@ const ClientsModule = () => {
 
   const filteredCustomers = customers.filter(customer =>
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone.includes(searchTerm)
+    (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (customer.phone && customer.phone.includes(searchTerm))
   );
 
   return (
@@ -201,8 +161,12 @@ const ClientsModule = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCustomers.map((customer) => (
-                  <TableRow key={customer.id}>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">Carregando...</TableCell>
+                  </TableRow>
+                ) : filteredCustomers.map((customer) => (
+                  <TableRow key={customer.id} onClick={() => onCustomerSelect(customer.id)} className="cursor-pointer hover:bg-gray-50">
                     <TableCell className="p-2 sm:p-4">
                       <div>
                         <div className="font-medium text-sm sm:text-base">{customer.name}</div>

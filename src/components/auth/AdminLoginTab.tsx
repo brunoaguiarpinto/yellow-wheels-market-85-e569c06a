@@ -6,13 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Shield, Lock } from "lucide-react";
 
 interface AdminLoginTabProps {
-  onSubmit: (credentials: { username: string; password: string }) => Promise<void>;
+  onSubmit: (credentials: { email: string; password: string }) => Promise<void>;
   isLoading: boolean;
 }
 
 const AdminLoginTab = ({ onSubmit, isLoading }: AdminLoginTabProps) => {
   const [credentials, setCredentials] = useState({
-    username: "",
+    email: "",
     password: ""
   });
 
@@ -24,17 +24,17 @@ const AdminLoginTab = ({ onSubmit, isLoading }: AdminLoginTabProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
       <div>
-        <Label htmlFor="admin-username" className="font-opensans text-sm sm:text-base mb-2 block">
-          Usuário
+        <Label htmlFor="admin-email" className="font-opensans text-sm sm:text-base mb-2 block">
+          Email
         </Label>
         <div className="relative">
           <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            id="admin-username"
-            type="text"
-            value={credentials.username}
-            onChange={(e) => setCredentials({...credentials, username: e.target.value})}
-            placeholder="Digite: admin"
+            id="admin-email"
+            type="email"
+            value={credentials.email}
+            onChange={(e) => setCredentials({...credentials, email: e.target.value})}
+            placeholder="Digite seu email"
             className="font-opensans pl-10 h-12 text-base touch-manipulation"
             required
           />

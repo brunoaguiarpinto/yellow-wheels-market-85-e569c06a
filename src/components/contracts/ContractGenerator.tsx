@@ -1,5 +1,6 @@
-
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Contract, ContractStatus, ContractClause, PaymentTerms, ContractType, CONTRACT_TEMPLATES, TradeInVehicle } from "@/types/contracts";
+import { Customer } from "@/types/crm";
+import { Vehicle } from "@/types/vehicle";
+import { User as Employee } from "@/contexts/AuthContext";
 
 interface ContractGeneratorProps {
   onContractGenerated: (contract: Contract) => void;
@@ -14,10 +18,20 @@ interface ContractGeneratorProps {
 }
 
 const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorProps) => {
-  const [customers, setCustomers] = useState<any[]>([]);
-  const [vehicles, setVehicles] = useState<any[]>([]);
-  const [employees, setEmployees] = useState<any[]>([]);
-  
+  // Buscando dados da API
+  const { data: customers = [] } = useQuery<Customer[]>({
+    queryKey: ['customers'],
+    queryFn: async () => (await api.get('/customers')).data,
+  });
+  const { data: vehicles = [] } = useQuery<Vehicle[]>({
+    queryKey: ['vehicles'],
+    queryFn: async () => (await api.get('/vehicles')).data,
+  });
+  const { data: employees = [] } = useQuery<Employee[]>({
+    queryKey: ['employees'],
+    queryFn: async () => (await api.get('/employees')).data,
+  });
+
   const [contractType, setContractType] = useState<ContractType>(ContractType.SALE);
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState("");
@@ -39,24 +53,6 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
   const [clauses, setClauses] = useState<ContractClause[]>([]);
 
   useEffect(() => {
-    // Carregar dados do localStorage
-    const savedCustomers = localStorage.getItem('customers');
-    if (savedCustomers) {
-      setCustomers(JSON.parse(savedCustomers));
-    }
-
-    const savedVehicles = localStorage.getItem('vehicles');
-    if (savedVehicles) {
-      setVehicles(JSON.parse(savedVehicles).filter((v: any) => v.status === 'available'));
-    }
-
-    const savedEmployees = localStorage.getItem('employees');
-    if (savedEmployees) {
-      setEmployees(JSON.parse(savedEmployees));
-    }
-  }, []);
-
-  useEffect(() => {
     // Atualizar cláusulas quando o tipo de contrato mudar
     const template = CONTRACT_TEMPLATES.find(t => t.type === contractType);
     if (template) {
@@ -76,7 +72,7 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
     return content
       .replace(/\[NOME_CLIENTE\]/g, customer.name)
       .replace(/\[CPF_CLIENTE\]/g, customer.document || customer.cpf || '')
-      .replace(/\[ENDERECO_CLIENTE\]/g, `${customer.street || ''} ${customer.number || ''}, ${customer.neighborhood || ''}, ${customer.city || ''} - ${customer.state || ''}, CEP ${customer.zipCode || ''}`)
+      .replace(/\[ENDERECO_CLIENTE\]/g, `${customer.address || ''} ${customer.number || ''}, ${customer.neighborhood || ''}, ${customer.city || ''} - ${customer.state || ''}, CEP ${customer.zipCode || ''}`)
       .replace(/\[TELEFONE_CLIENTE\]/g, customer.phone || '')
       .replace(/\[MARCA\]/g, vehicle.brand)
       .replace(/\[MODELO\]/g, vehicle.model)
@@ -85,8 +81,8 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
       .replace(/\[ANO_FABRICACAO\]/g, vehicle.year.toString())
       .replace(/\[ANO_MODELO\]/g, vehicle.year.toString())
       .replace(/\[QUILOMETRAGEM\]/g, vehicle.mileage?.toString() || '0')
-      .replace(/\[PLACA\]/g, vehicle.plate || '')
-      .replace(/\[CHASSI\]/g, vehicle.chassis || '')
+      .replace(/\[PLACA\]/g, 'N/A')
+      .replace(/\[CHASSI\]/g, 'N/A')
       .replace(/\[VALOR_VENDA\]/g, `R$ ${parseFloat(salePrice || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`)
       .replace(/\[VALOR_GARANTIA\]/g, `R$ ${parseFloat(warrantyAmount || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`)
       .replace(/\[PROBLEMA_RELATADO\]/g, warrantyIssue)
@@ -119,8 +115,8 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
       contractType,
       customerId: customer.id,
       customerName: customer.name,
-      customerDocument: customer.document || customer.cpf || '',
-      customerAddress: `${customer.street || ''} ${customer.number || ''}, ${customer.neighborhood || ''}, ${customer.city || ''} - ${customer.state || ''}, CEP ${customer.zipCode || ''}`,
+      customerDocument: customer.cpf || '',
+      customerAddress: `${customer.address || ''} ${customer.number || ''}, ${customer.neighborhood || ''}, ${customer.city || ''} - ${customer.state || ''}, CEP ${customer.zipCode || ''}`,
       customerPhone: customer.phone || '',
       vehicleId: vehicle.id,
       vehicleBrand: vehicle.brand,
@@ -128,8 +124,8 @@ const ContractGenerator = ({ onContractGenerated, onCancel }: ContractGeneratorP
       vehicleYear: vehicle.year,
       vehicleColor: vehicle.color,
       vehicleFuel: vehicle.fuel,
-      vehiclePlate: vehicle.plate || '',
-      vehicleChassis: vehicle.chassis || '',
+      vehiclePlate: '', // Campo não existe no tipo
+      vehicleChassis: '', // Campo não existe no tipo
       vehicleKm: vehicle.mileage || 0,
       salePrice: parseFloat(salePrice || '0'),
       employeeId: employee.id,

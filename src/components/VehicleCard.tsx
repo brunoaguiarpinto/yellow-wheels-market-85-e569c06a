@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 
 interface Vehicle {
-  id: number;
+  id: string;
   brand: string;
   model: string;
   year: number;

@@ -7,16 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Edit, Trash, Eye, EyeOff } from "lucide-react";
 import EmployeeForm from "@/components/EmployeeForm";
 import EmployeeEditForm from "@/components/EmployeeEditForm";
-
-interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  position: string;
-  department: string;
-  permissions: string[];
-  password: string;
-}
+import { User as Employee } from "@/contexts/AuthContext";
 
 interface EmployeeManagementProps {
   employees: Employee[];
@@ -89,10 +80,7 @@ const EmployeeManagement = ({
               <TableRow>
                 <TableHead className="font-opensans">Nome</TableHead>
                 <TableHead className="font-opensans">Email</TableHead>
-                <TableHead className="font-opensans">Cargo</TableHead>
-                <TableHead className="font-opensans">Departamento</TableHead>
-                <TableHead className="font-opensans">Permissões</TableHead>
-                <TableHead className="font-opensans">Senha</TableHead>
+                <TableHead className="font-opensans">Role</TableHead>
                 <TableHead className="font-opensans">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -101,38 +89,7 @@ const EmployeeManagement = ({
                 <TableRow key={employee.id}>
                   <TableCell className="font-opensans">{employee.name}</TableCell>
                   <TableCell className="font-opensans">{employee.email}</TableCell>
-                  <TableCell className="font-opensans">{employee.position}</TableCell>
-                  <TableCell className="font-opensans">{employee.department}</TableCell>
-                  <TableCell className="font-opensans">
-                    <div className="flex flex-wrap gap-1">
-                      {employee.permissions?.length > 0 ? (
-                        employee.permissions.map((permission: string) => (
-                          <span 
-                            key={permission} 
-                            className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs"
-                          >
-                            {permission.split('.')[1]}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-gray-500 text-sm">Nenhuma</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-opensans">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-mono text-sm">
-                        {showPasswords[employee.id] ? employee.password : '••••••'}
-                      </span>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => togglePasswordVisibility(employee.id)}
-                      >
-                        {showPasswords[employee.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </TableCell>
+                  <TableCell className="font-opensans">{employee.role}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
                       <Button 

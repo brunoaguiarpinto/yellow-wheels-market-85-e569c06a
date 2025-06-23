@@ -1,5 +1,8 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/services/api";
+import { Vehicle as FullVehicle } from "@/types/vehicle"; // Importando o tipo completo
 
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,10 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Navbar from "@/components/Navbar";
 import VehicleCard from "@/components/VehicleCard";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface Vehicle {
-  id: number;
+// Tipo local para corresponder ao que VehicleCard espera
+interface VehicleForCard {
+  id: string;
   brand: string;
   model: string;
   year: number;
@@ -20,39 +25,31 @@ interface Vehicle {
   fuel: string;
 }
 
+const fetchVehicles = async (): Promise<VehicleForCard[]> => {
+  const { data } = await api.get<FullVehicle[]>('/vehicles');
+  // Mapeia os dados completos da API para o formato que o Card espera
+  return data.map((vehicle) => ({
+    id: vehicle.id,
+    brand: vehicle.brand,
+    model: vehicle.model,
+    year: vehicle.year,
+    price: vehicle.price,
+    mileage: vehicle.mileage,
+    fuel: vehicle.fuel,
+    image: vehicle.images?.[0] || 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=500&auto=format&fit=crop&q=60',
+  }));
+};
+
 const Vehicles = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [selectedVehicle, setSelectedVehicle] = useState<VehicleForCard | null>(null);
 
-  // Carregar veículos do localStorage
-  useEffect(() => {
-    const savedVehicles = localStorage.getItem('vehicles');
-    if (savedVehicles) {
-      try {
-        const parsedVehicles = JSON.parse(savedVehicles);
-        // Converter os dados do admin para o formato esperado pela página pública
-        const formattedVehicles = parsedVehicles.map((vehicle: any) => ({
-          id: parseInt(vehicle.id) || Date.now(),
-          brand: vehicle.brand || '',
-          model: vehicle.model || '',
-          year: vehicle.year || 0,
-          price: vehicle.price || 0,
-          image: vehicle.image || 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=500&auto=format&fit=crop&q=60',
-          mileage: vehicle.mileage || 0,
-          fuel: vehicle.fuel || 'Flex'
-        }));
-        setVehicles(formattedVehicles);
-      } catch (error) {
-        console.error('Erro ao carregar veículos do localStorage:', error);
-        setVehicles([]);
-      }
-    } else {
-      setVehicles([]);
-    }
-  }, []);
+  const { data: vehicles = [], isLoading, isError } = useQuery<VehicleForCard[]>({
+    queryKey: ['vehicles'],
+    queryFn: fetchVehicles,
+  });
 
   const filteredVehicles = vehicles.filter(vehicle => {
     const matchesSearch = vehicle.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -66,8 +63,74 @@ const Vehicles = () => {
   const brands = [...new Set(vehicles.map(v => v.brand))].filter(Boolean);
   const years = [...new Set(vehicles.map(v => v.year.toString()))].filter(Boolean).sort().reverse();
 
-  const handleViewDetails = (vehicle: Vehicle) => {
+  const handleViewDetails = (vehicle: VehicleForCard) => {
     setSelectedVehicle(vehicle);
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 animate-slide-up">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="space-y-4">
+              <Skeleton className="h-64 w-full" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-6 w-1/2" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <div className="text-center py-12 animate-fade-in">
+          <p className="text-xl font-opensans text-red-600">
+            Erro ao carregar os veículos. Tente novamente mais tarde.
+          </p>
+        </div>
+      );
+    }
+
+    if (vehicles.length === 0) {
+      return (
+        <div className="text-center py-12 animate-fade-in">
+          <div className="max-w-md mx-auto">
+            <h3 className="text-2xl font-montserrat font-bold text-gray-900 mb-4">
+              Nenhum veículo em estoque
+            </h3>
+            <p className="text-lg font-opensans text-gray-600 mb-6">
+              Estamos preparando nosso estoque. Em breve você encontrará aqui uma seleção incrível de carros!
+            </p>
+            <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
+              Entre em Contato
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    if (filteredVehicles.length === 0) {
+      return (
+        <div className="text-center py-12 animate-fade-in">
+          <p className="text-xl font-opensans text-gray-600">
+            Nenhum veículo encontrado com os filtros selecionados.
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 animate-slide-up">
+        {filteredVehicles.map(vehicle => (
+          <VehicleCard 
+            key={vehicle.id} 
+            vehicle={vehicle} 
+            onViewDetails={handleViewDetails}
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -76,7 +139,6 @@ const Vehicles = () => {
       
       <div className="pt-24 pb-12">
         <div className="container mx-auto px-4">
-          {/* Header */}
           <div className="text-center mb-12 animate-fade-in">
             <h1 className="text-4xl md:text-5xl font-montserrat font-bold text-black mb-4">
               Nosso Estoque
@@ -86,7 +148,6 @@ const Vehicles = () => {
             </p>
           </div>
 
-          {/* Filters */}
           <Card className="mb-8 animate-slide-up">
             <CardHeader>
               <CardTitle className="font-montserrat">Filtrar Veículos</CardTitle>
@@ -142,7 +203,6 @@ const Vehicles = () => {
             </CardContent>
           </Card>
 
-          {/* Action Buttons */}
           <div className="flex justify-center space-x-4 mb-8 animate-slide-up">
             <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold px-8">
               Quero Comprar
@@ -152,48 +212,10 @@ const Vehicles = () => {
             </Button>
           </div>
 
-          {/* Vehicles Grid */}
-          {vehicles.length > 0 && (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 animate-slide-up">
-              {filteredVehicles.map(vehicle => (
-                <VehicleCard 
-                  key={vehicle.id} 
-                  vehicle={vehicle} 
-                  onViewDetails={handleViewDetails}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Empty State */}
-          {vehicles.length === 0 && (
-            <div className="text-center py-12 animate-fade-in">
-              <div className="max-w-md mx-auto">
-                <h3 className="text-2xl font-montserrat font-bold text-gray-900 mb-4">
-                  Estoque em Construção
-                </h3>
-                <p className="text-lg font-opensans text-gray-600 mb-6">
-                  Estamos preparando nosso estoque com os melhores veículos. Em breve você encontrará aqui uma seleção incrível de carros!
-                </p>
-                <Button className="bg-accent text-black hover:bg-accent/90 font-opensans font-semibold">
-                  Entre em Contato
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* No Results State */}
-          {vehicles.length > 0 && filteredVehicles.length === 0 && (
-            <div className="text-center py-12 animate-fade-in">
-              <p className="text-xl font-opensans text-gray-600">
-                Nenhum veículo encontrado com os filtros selecionados.
-              </p>
-            </div>
-          )}
+          {renderContent()}
         </div>
       </div>
 
-      {/* Vehicle Details Modal */}
       <Dialog open={!!selectedVehicle} onOpenChange={() => setSelectedVehicle(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>

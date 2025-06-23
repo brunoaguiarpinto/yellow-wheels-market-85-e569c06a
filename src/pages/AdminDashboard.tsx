@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "lucide-react";
@@ -12,7 +14,10 @@ import CRM from "./CRM";
 import ContractsModule from "@/components/contracts/ContractsModule";
 import ReportsModule from "@/components/reports/ReportsModule";
 import { useAuth } from "@/contexts/AuthContext";
+import { Customer } from "@/types/crm";
+import { User as Employee } from "@/contexts/AuthContext";
 
+// Tipos locais para veículos (serão refatorados depois)
 interface Vehicle {
   id: string;
   brand: string;
@@ -22,189 +27,156 @@ interface Vehicle {
   status: string;
 }
 
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  interest: string;
-}
-
 const Admin = () => {
-  const { isAuthenticated, isAdmin, user, logout, login, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState("vehicles");
-  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
-  const [employees, setEmployees] = useState<any[]>([]);
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const { isAuthenticated, isAdmin, user, logout, login, isLoading: authIsLoading } = useAuth();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Carregar dados do localStorage
-    const savedEmployees = localStorage.getItem('employees');
-    if (savedEmployees) {
-      setEmployees(JSON.parse(savedEmployees));
-    }
+  const [activeTab, setActiveTab] = useState("employees");
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
 
-    const savedVehicles = localStorage.getItem('vehicles');
-    if (savedVehicles) {
-      setVehicles(JSON.parse(savedVehicles));
-    } else {
-      const initialVehicles: Vehicle[] = [];
-      setVehicles(initialVehicles);
-      localStorage.setItem('vehicles', JSON.stringify(initialVehicles));
-    }
+  // Lógica de dados para Clientes com React Query
+  const { data: customers = [], isLoading: customersIsLoading } = useQuery<Customer[]>({
+    queryKey: ['customers'],
+    queryFn: async () => {
+      const { data } = await api.get('/customers');
+      return data;
+    },
+    enabled: isAuthenticated && isAdmin,
+  });
 
-    const savedCustomers = localStorage.getItem('customers');
-    if (savedCustomers) {
-      setCustomers(JSON.parse(savedCustomers));
-    } else {
-      const initialCustomers: Customer[] = [];
-      setCustomers(initialCustomers);
-      localStorage.setItem('customers', JSON.stringify(initialCustomers));
-    }
-  }, []);
+  // Lógica de dados para Funcionários com React Query
+  const { data: employees = [], isLoading: employeesIsLoading } = useQuery<Employee[]>({
+    queryKey: ['employees'],
+    queryFn: async () => {
+      const { data } = await api.get('/employees');
+      return data;
+    },
+    enabled: isAuthenticated && isAdmin,
+  });
 
-  const handleLogin = async (username: string, password: string) => {
-    const success = await login(username, password, 'admin');
-    
+  const createCustomerMutation = useMutation({
+    mutationFn: (newCustomerData: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) => api.post('/customers', newCustomerData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      toast({ title: "Cliente adicionado", description: "Novo cliente foi adicionado com sucesso." });
+    },
+    onError: () => {
+      toast({ title: "Erro", description: "Não foi possível adicionar o cliente.", variant: "destructive" });
+    }
+  });
+
+  const updateCustomerMutation = useMutation({
+    mutationFn: (updatedCustomer: Customer) => api.put(`/customers/${updatedCustomer.id}`, updatedCustomer),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      toast({ title: "Cliente atualizado", description: "Os dados do cliente foram atualizados com sucesso." });
+    },
+    onError: () => {
+      toast({ title: "Erro", description: "Não foi possível atualizar o cliente.", variant: "destructive" });
+    }
+  });
+
+  const deleteCustomerMutation = useMutation({
+    mutationFn: (customerId: string) => api.delete(`/customers/${customerId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      toast({ title: "Cliente removido", description: "O cliente foi removido do sistema." });
+    },
+    onError: () => {
+      toast({ title: "Erro", description: "Não foi possível remover o cliente.", variant: "destructive" });
+    }
+  });
+
+  const createEmployeeMutation = useMutation({
+    mutationFn: (newEmployeeData: any) => api.post('/employees', newEmployeeData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast({ title: "Funcionário adicionado", description: "Novo funcionário foi adicionado com sucesso." });
+    },
+    onError: () => {
+      toast({ title: "Erro", description: "Não foi possível adicionar o funcionário.", variant: "destructive" });
+    }
+  });
+
+  const updateEmployeeMutation = useMutation({
+    mutationFn: (updatedEmployee: any) => api.put(`/employees/${updatedEmployee.id}`, updatedEmployee),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast({ title: "Funcionário atualizado", description: "Os dados do funcionário foram atualizados com sucesso." });
+    },
+    onError: () => {
+      toast({ title: "Erro", description: "Não foi possível atualizar o funcionário.", variant: "destructive" });
+    }
+  });
+
+  const deleteEmployeeMutation = useMutation({
+    mutationFn: (employeeId: string) => api.delete(`/employees/${employeeId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast({ title: "Funcionário removido", description: "O funcionário foi removido do sistema." });
+    },
+    onError: () => {
+      toast({ title: "Erro", description: "Não foi possível remover o funcionário.", variant: "destructive" });
+    }
+  });
+
+  // Lógica de dados para Veículos com React Query
+  const { data: vehicles = [], isLoading: vehiclesIsLoading } = useQuery<Vehicle[]>({
+    queryKey: ['vehicles'],
+    queryFn: async () => {
+      const { data } = await api.get('/vehicles');
+      return data;
+    },
+    enabled: isAuthenticated && isAdmin,
+  });
+
+  // TODO: Adicionar mutações para veículos
+
+  const handleLogin = async (email: string, password: string) => {
+    const success = await login(email, password);
     if (success) {
-      toast({
-        title: "Login realizado com sucesso!",
-        description: "Bem-vindo ao painel administrativo da Lord Veículos.",
-      });
+      toast({ title: "Login realizado com sucesso!", description: "Bem-vindo ao painel administrativo." });
     } else {
-      toast({
-        title: "Erro no login",
-        description: "Usuário ou senha incorretos.",
-        variant: "destructive",
-      });
+      toast({ title: "Erro no login", description: "Usuário ou senha incorretos.", variant: "destructive" });
     }
-  };
-
-  const handleVehicleSubmit = (data: any) => {
-    if (editingVehicle) {
-      const updatedVehicles = vehicles.map(vehicle => 
-        vehicle.id === editingVehicle.id 
-          ? { ...vehicle, ...data, id: editingVehicle.id }
-          : vehicle
-      );
-      setVehicles(updatedVehicles);
-      localStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
-      toast({
-        title: "Veículo atualizado",
-        description: "Os dados do veículo foram atualizados com sucesso.",
-      });
-    } else {
-      const newVehicle = {
-        id: Date.now().toString(),
-        ...data,
-        status: "Disponível"
-      };
-      const updatedVehicles = [...vehicles, newVehicle];
-      setVehicles(updatedVehicles);
-      localStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
-      toast({
-        title: "Veículo adicionado",
-        description: "Novo veículo foi adicionado com sucesso.",
-      });
-    }
-    setEditingVehicle(null);
   };
 
   const handleCustomerSubmit = (data: any) => {
     if (editingCustomer) {
-      const updatedCustomers = customers.map(customer => 
-        customer.id === editingCustomer.id 
-          ? { ...customer, ...data, id: editingCustomer.id }
-          : customer
-      );
-      setCustomers(updatedCustomers);
-      localStorage.setItem('customers', JSON.stringify(updatedCustomers));
-      toast({
-        title: "Cliente atualizado",
-        description: "Os dados do cliente foram atualizados com sucesso.",
-      });
+      updateCustomerMutation.mutate({ ...editingCustomer, ...data });
     } else {
-      const newCustomer = {
-        id: Date.now().toString(),
-        ...data
-      };
-      const updatedCustomers = [...customers, newCustomer];
-      setCustomers(updatedCustomers);
-      localStorage.setItem('customers', JSON.stringify(updatedCustomers));
-      toast({
-        title: "Cliente adicionado",
-        description: "Novo cliente foi adicionado com sucesso.",
-      });
+      createCustomerMutation.mutate(data);
     }
     setEditingCustomer(null);
-  };
-
-  const handleEmployeeSubmit = (data: any) => {
-    console.log("Dados do funcionário:", data);
-    
-    const updatedEmployees = [...employees, data];
-    setEmployees(updatedEmployees);
-    localStorage.setItem('employees', JSON.stringify(updatedEmployees));
-    
-    toast({
-      title: "Funcionário cadastrado com sucesso!",
-      description: `Login: ${data.email} | Senha: ${data.password}`,
-    });
-  };
-
-  const handleVehicleEdit = (vehicle: Vehicle) => {
-    setEditingVehicle(vehicle);
   };
 
   const handleCustomerEdit = (customer: Customer) => {
     setEditingCustomer(customer);
   };
 
-  const handleEmployeeUpdate = (data: any) => {
-    const updatedEmployees = employees.map(emp => 
-      emp.id === data.id ? data : emp
-    );
-    setEmployees(updatedEmployees);
-    localStorage.setItem('employees', JSON.stringify(updatedEmployees));
-    
-    toast({
-      title: "Funcionário atualizado!",
-      description: "Os dados do funcionário foram atualizados com sucesso.",
-    });
-  };
-
-  const deleteVehicle = (vehicleId: string) => {
-    const updatedVehicles = vehicles.filter(vehicle => vehicle.id !== vehicleId);
-    setVehicles(updatedVehicles);
-    localStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
-    toast({
-      title: "Veículo removido",
-      description: "O veículo foi removido do sistema.",
-    });
-  };
-
   const deleteCustomer = (customerId: string) => {
-    const updatedCustomers = customers.filter(customer => customer.id !== customerId);
-    setCustomers(updatedCustomers);
-    localStorage.setItem('customers', JSON.stringify(updatedCustomers));
-    toast({
-      title: "Cliente removido",
-      description: "O cliente foi removido do sistema.",
-    });
+    deleteCustomerMutation.mutate(customerId);
+  };
+
+  const handleEmployeeSubmit = (data: any) => {
+    createEmployeeMutation.mutate(data);
+  };
+
+  const handleEmployeeUpdate = (data: any) => {
+    updateEmployeeMutation.mutate(data);
   };
 
   const deleteEmployee = (employeeId: string) => {
-    const updatedEmployees = employees.filter(emp => emp.id !== employeeId);
-    setEmployees(updatedEmployees);
-    localStorage.setItem('employees', JSON.stringify(updatedEmployees));
-    toast({
-      title: "Funcionário removido",
-      description: "O funcionário foi removido do sistema.",
-    });
+    deleteEmployeeMutation.mutate(employeeId);
   };
+
+  // Funções de veículo (a serem conectadas com mutações)
+  const handleVehicleSubmit = (data: any) => { console.log("Submit vehicle", data) };
+  const handleVehicleEdit = (vehicle: Vehicle) => { setEditingVehicle(vehicle) };
+  const deleteVehicle = (vehicleId: string) => { console.log("Delete vehicle", vehicleId) };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -217,7 +189,6 @@ const Admin = () => {
             onVehicleDelete={deleteVehicle}
           />
         );
-
       case "employees":
         return (
           <EmployeeManagement
@@ -227,7 +198,6 @@ const Admin = () => {
             onEmployeeDelete={deleteEmployee}
           />
         );
-
       case "customers":
         return (
           <CustomerManagement
@@ -237,26 +207,15 @@ const Admin = () => {
             onCustomerDelete={deleteCustomer}
           />
         );
-
-      case "crm":
-        return <CRM />;
-
-      case "financial":
-        return <Financial />;
-
-      case "contracts":
-        return <ContractsModule />;
-
-      case "reports":
-        return <ReportsModule />;
-
-      default:
-        return null;
+      case "crm": return <CRM />;
+      case "financial": return <Financial />;
+      case "contracts": return <ContractsModule />;
+      case "reports": return <ReportsModule />;
+      default: return null;
     }
   };
 
-  // Loading state
-  if (isLoading) {
+  if (authIsLoading || customersIsLoading || employeesIsLoading || vehiclesIsLoading) {
     return (
       <div className="min-h-screen bg-gradient-primary flex items-center justify-center px-4">
         <div className="text-center">
@@ -267,9 +226,8 @@ const Admin = () => {
     );
   }
 
-  // Se não estiver autenticado ou não for admin, mostrar tela de login
   if (!isAuthenticated || !isAdmin) {
-    return <AdminLoginForm onLogin={handleLogin} isLoading={isLoading} />;
+    return <AdminLoginForm onLogin={handleLogin} isLoading={authIsLoading} />;
   }
 
   return (
@@ -279,20 +237,11 @@ const Admin = () => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <User className="h-5 w-5 text-gray-600" />
-              <span className="font-opensans text-gray-600">
-                {user?.name || 'Admin'}
-              </span>
+              <span className="font-opensans text-gray-600">{user?.name || 'Admin'}</span>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={logout}
-              className="font-opensans"
-            >
-              Sair
-            </Button>
+            <Button variant="outline" onClick={logout} className="font-opensans">Sair</Button>
           </div>
         </div>
-
         {renderContent()}
       </div>
     </AdminSidebar>

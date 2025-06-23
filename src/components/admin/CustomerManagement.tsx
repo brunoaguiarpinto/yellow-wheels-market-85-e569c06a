@@ -6,14 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Edit, Trash } from "lucide-react";
 import CustomerForm from "@/components/CustomerForm";
-
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  interest: string;
-}
+import { Customer } from "@/types/crm";
 
 interface CustomerManagementProps {
   customers: Customer[];
@@ -76,7 +69,7 @@ const CustomerManagement = ({
                 <TableHead className="font-opensans">Nome</TableHead>
                 <TableHead className="font-opensans">Email</TableHead>
                 <TableHead className="font-opensans">Telefone</TableHead>
-                <TableHead className="font-opensans">Interesse</TableHead>
+                <TableHead className="font-opensans">Interesse em Veículo</TableHead>
                 <TableHead className="font-opensans">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -86,7 +79,7 @@ const CustomerManagement = ({
                   <TableCell className="font-opensans">{customer.name}</TableCell>
                   <TableCell className="font-opensans">{customer.email}</TableCell>
                   <TableCell className="font-opensans">{customer.phone}</TableCell>
-                  <TableCell className="font-opensans">{customer.interest}</TableCell>
+                  <TableCell className="font-opensans">{customer.vehicleInterest || 'N/A'}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
                       <Button 
