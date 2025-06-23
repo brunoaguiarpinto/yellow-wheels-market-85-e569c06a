@@ -32,4 +32,4 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/vehicle-purchases', vehiclePurchaseRoutes);
 
 
-export { app };
+export default app;
