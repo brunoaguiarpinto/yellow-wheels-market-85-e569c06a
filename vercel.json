@@ -1,18 +1,6 @@
 {
-  "functions": {
-    "api/**/*.ts": {
-      "maxDuration": 10,
-      "memory": 256
-    }
-  },
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/index"
-    },
-    {
-      "source": "/((?!api/|favicon.ico|placeholder.svg|robots.txt).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/frontend/index.html" }
   ]
 }
