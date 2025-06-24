@@ -1,6 +1,8 @@
 // @ts-nocheck
 import { db } from '../db';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
+import { sendWelcomeAndSetupPasswordEmail } from './email.service';
 
 export const employeeService = {
   findAll: async () => {
@@ -14,19 +16,31 @@ export const employeeService = {
   },
 
   create: async (employeeData) => {
-    const { name, email, password, role, is_active = true } = employeeData;
+    const { name, email, role, is_active = true } = employeeData;
     
-    const saltRounds = 10;
-    const password_hash = await bcrypt.hash(password, saltRounds);
-
-    const query = `
-      INSERT INTO employees (name, email, password_hash, role, is_active)
-      VALUES ($1, $2, $3, $4, $5)
+    // A senha não é mais definida na criação. password_hash será NULL.
+    const createQuery = `
+      INSERT INTO employees (name, email, role, is_active)
+      VALUES ($1, $2, $3, $4)
       RETURNING id, name, email, role, is_active;
     `;
-    const values = [name, email, password_hash, role, is_active];
-    const result = await db.query(query, values);
-    return result.rows[0];
+    const createValues = [name, email, role, is_active];
+    const result = await db.query(createQuery, createValues);
+    const newEmployee = result.rows[0];
+
+    // Gerar e salvar token para configuração de senha
+    const setupToken = crypto.randomBytes(32).toString('hex');
+    const passwordSetupExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // Token válido por 24 horas
+
+    await db.query(
+      'UPDATE employees SET password_reset_token = $1, password_reset_expires = $2 WHERE id = $3',
+      [setupToken, passwordSetupExpires, newEmployee.id]
+    );
+
+    // Enviar e-mail de boas-vindas com o link para definir a senha
+    await sendWelcomeAndSetupPasswordEmail(newEmployee.email, setupToken);
+
+    return newEmployee;
   },
 
   update: async (id: string, employeeData) => {

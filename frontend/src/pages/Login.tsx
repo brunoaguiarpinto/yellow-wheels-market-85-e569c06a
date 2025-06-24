@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -118,11 +118,12 @@ const Login = () => {
 
           <div className="text-center mt-6">
             <Button 
+              asChild
               type="button" 
               variant="link" 
               className="text-accent font-opensans text-sm sm:text-base p-2 min-h-10 touch-manipulation"
             >
-              Esqueci a Senha
+              <Link to="/forgot-password">Esqueci a Senha</Link>
             </Button>
           </div>
         </CardContent>

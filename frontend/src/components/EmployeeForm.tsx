@@ -24,7 +24,7 @@ const employeeSchema = z.object({
 type EmployeeFormData = z.infer<typeof employeeSchema>;
 
 interface EmployeeFormProps {
-  onSubmit?: (data: EmployeeFormData & { id: string; password: string }) => void;
+  onSubmit?: (data: EmployeeFormData) => void;
   onCancel?: () => void;
 }
 
@@ -39,28 +39,14 @@ const EmployeeForm = ({ onSubmit, onCancel }: EmployeeFormProps) => {
     }
   });
 
-  const generateCredentials = (name: string, email: string) => {
-    const id = `EMP${Date.now()}`;
-    const password = `${name.split(' ')[0].toLowerCase()}${Math.floor(Math.random() * 1000)}`;
-    return { id, password };
-  };
-
   const handleSubmit = (data: EmployeeFormData) => {
-    const credentials = generateCredentials(data.name, data.email);
-    
-    const employeeData = {
-      ...data,
-      id: credentials.id,
-      password: credentials.password,
-      createdAt: new Date().toISOString(),
-      status: 'active'
-    };
-
-    onSubmit?.(employeeData);
+    // A senha não é mais gerada no frontend.
+    // O ID e outras informações serão gerenciados pelo backend.
+    onSubmit?.(data);
     
     toast({
       title: "Funcionário cadastrado!",
-      description: `Login: ${data.email} | Senha: ${credentials.password}`,
+      description: `Um e-mail foi enviado para ${data.email} para que o funcionário configure sua senha.`,
     });
   };
 
