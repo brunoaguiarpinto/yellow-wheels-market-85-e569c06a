@@ -1,11 +1,13 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Edit, Trash } from "lucide-react";
 import CustomerForm from "@/components/CustomerForm";
+import ConfirmationDialog from "@/components/modals/ConfirmationDialog";
 import { Customer } from "@/types/crm";
 
 interface CustomerManagementProps {
@@ -25,7 +27,10 @@ const CustomerManagement = ({
   onCustomerEdit, 
   onCustomerDelete 
 }: CustomerManagementProps) => {
+  const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [deletingCustomer, setDeletingCustomer] = useState<Customer | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const handleCustomerEdit = (customer: Customer) => {
     onCustomerEdit(customer);
@@ -34,6 +39,24 @@ const CustomerManagement = ({
   const handleCustomerSubmit = (data: any) => {
     onCustomerSubmit(data);
     setIsAddDialogOpen(false);
+  };
+
+  const handleDeleteClick = (customer: Customer) => {
+    setDeletingCustomer(customer);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deletingCustomer) {
+      onCustomerDelete(deletingCustomer.id);
+      toast({
+        title: "Cliente excluído!",
+        description: `O cliente ${deletingCustomer.name} foi removido do sistema.`,
+        variant: "destructive",
+      });
+      setDeletingCustomer(null);
+    }
+    setIsConfirmOpen(false);
   };
 
   return (
@@ -90,7 +113,7 @@ const CustomerManagement = ({
                       <Button 
                         size="sm" 
                         variant="destructive"
-                        onClick={() => onCustomerDelete(customer.id)}
+                        onClick={() => handleDeleteClick(customer)}
                       >
                         <Trash className="h-4 w-4" />
                       </Button>
@@ -124,6 +147,14 @@ const CustomerManagement = ({
           />
         </DialogContent>
       </Dialog>
+
+      <ConfirmationDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title={`Confirmar Exclusão`}
+        description={`Tem certeza de que deseja excluir o cliente ${deletingCustomer?.name}? Esta ação não pode ser desfeita.`}
+      />
     </div>
   );
 };

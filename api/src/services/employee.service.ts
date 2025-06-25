@@ -16,15 +16,20 @@ export const employeeService = {
   },
 
   create: async (employeeData) => {
-    const { name, email, role, is_active = true } = employeeData;
+    const { name, email, position, is_active = true } = employeeData;
+    const role = position; // Mapeando position para role
     
-    // A senha não é mais definida na criação. password_hash será NULL.
+    // Gerar uma senha temporária e seu hash
+    const temporaryPassword = crypto.randomBytes(16).toString('hex');
+    const saltRounds = 10;
+    const password_hash = await bcrypt.hash(temporaryPassword, saltRounds);
+
     const createQuery = `
-      INSERT INTO employees (name, email, role, is_active)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO employees (name, email, role, is_active, password_hash)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING id, name, email, role, is_active;
     `;
-    const createValues = [name, email, role, is_active];
+    const createValues = [name, email, role, is_active, password_hash];
     const result = await db.query(createQuery, createValues);
     const newEmployee = result.rows[0];
 

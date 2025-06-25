@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash } from "lucide-react";
 import VehicleForm from "@/components/VehicleForm";
+import ConfirmationDialog from "@/components/modals/ConfirmationDialog";
 
 interface Vehicle {
   id: string;
@@ -30,9 +31,12 @@ const VehicleManagement = ({
   onVehicleEdit, 
   onVehicleDelete 
 }: VehicleManagementProps) => {
+  const { toast } = useToast();
   const [vehicleDialogOpen, setVehicleDialogOpen] = useState(false);
   const [vehicleEditDialogOpen, setVehicleEditDialogOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  const [deletingVehicle, setDeletingVehicle] = useState<Vehicle | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const handleVehicleEdit = (vehicle: Vehicle) => {
     setEditingVehicle(vehicle);
@@ -45,6 +49,24 @@ const VehicleManagement = ({
     setVehicleDialogOpen(false);
     setVehicleEditDialogOpen(false);
     setEditingVehicle(null);
+  };
+
+  const handleDeleteClick = (vehicle: Vehicle) => {
+    setDeletingVehicle(vehicle);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deletingVehicle) {
+      onVehicleDelete(deletingVehicle.id);
+      toast({
+        title: "Veículo excluído!",
+        description: `O veículo ${deletingVehicle.brand} ${deletingVehicle.model} foi removido do sistema.`,
+        variant: "destructive",
+      });
+      setDeletingVehicle(null);
+    }
+    setIsConfirmOpen(false);
   };
 
   return (
@@ -107,7 +129,7 @@ const VehicleManagement = ({
                       <Button 
                         size="sm" 
                         variant="destructive"
-                        onClick={() => onVehicleDelete(vehicle.id)}
+                        onClick={() => handleDeleteClick(vehicle)}
                       >
                         <Trash className="h-4 w-4" />
                       </Button>
@@ -143,6 +165,14 @@ const VehicleManagement = ({
           />
         </DialogContent>
       </Dialog>
+
+      <ConfirmationDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title={`Confirmar Exclusão`}
+        description={`Tem certeza de que deseja excluir o veículo ${deletingVehicle?.brand} ${deletingVehicle?.model}? Esta ação não pode ser desfeita.`}
+      />
     </div>
   );
 };

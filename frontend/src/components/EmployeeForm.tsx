@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import PersonalDataSection from "./employee/PersonalDataSection";
 import ProfessionalDataSection from "./employee/ProfessionalDataSection";
 import PermissionsSection from "./employee/PermissionsSection";
@@ -29,8 +28,6 @@ interface EmployeeFormProps {
 }
 
 const EmployeeForm = ({ onSubmit, onCancel }: EmployeeFormProps) => {
-  const { toast } = useToast();
-  
   const form = useForm<EmployeeFormData>({
     resolver: zodResolver(employeeSchema),
     defaultValues: {
@@ -43,11 +40,6 @@ const EmployeeForm = ({ onSubmit, onCancel }: EmployeeFormProps) => {
     // A senha não é mais gerada no frontend.
     // O ID e outras informações serão gerenciados pelo backend.
     onSubmit?.(data);
-    
-    toast({
-      title: "Funcionário cadastrado!",
-      description: `Um e-mail foi enviado para ${data.email} para que o funcionário configure sua senha.`,
-    });
   };
 
   return (
